@@ -44,9 +44,10 @@ if(art==='icon'){
   stage.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="12 9 100 104">'+brainPaths()+dot(103,100,10)+'</svg>';
 }else if(art==='lockup'){
   var ink=p.get('ink')||'#f2e9d6';
-  var h=H-pad*2, bs=Math.round(h*0.95), fs=Math.round(h*0.86);
-  stage.innerHTML='<span class="lock"><span class="R" style="font-size:'+fs+'px;color:'+ink+'">R</span>'
-    +'<svg width="'+bs+'" height="'+bs+'" viewBox="6 6 112 112" style="margin-left:'+Math.round(h*0.02)+'px">'+brainPaths()+dot(103,100,10)+'</svg></span>';
+  var h=H-pad*2, bs=Math.round(h*1.06), fs=Math.round(h*0.92);
+  stage.innerHTML='<span class="lock">'
+    +'<svg width="'+bs+'" height="'+bs+'" viewBox="10 8 92 82" style="margin-right:'+Math.round(h*0.05)+'px">'+brainPaths()+'</svg>'
+    +'<span class="R" style="font-size:'+fs+'px;color:'+ink+'">R<span style="color:'+RED+'">.</span></span></span>';
 }else if(art==='word'){
   var ink2=p.get('ink')||'#f2e9d6';
   var h2=H-pad*2, fs2=Math.round(h2*0.74), bs2=Math.round(h2*0.92);

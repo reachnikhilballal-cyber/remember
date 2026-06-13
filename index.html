@@ -48,7 +48,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 /* ---------- app bar ---------- */
 .appbar{position:sticky;top:0;z-index:30;backdrop-filter:saturate(140%) blur(12px);background:var(--bar-blur);border-bottom:1px solid var(--line-2);}
 .appbar .in{max-width:1040px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:14px;}
-.brand{display:inline-flex;align-items:center;gap:9px;font-size:21px;font-weight:700;letter-spacing:-.03em;}
+.brand{display:inline-flex;align-items:center;gap:8px;font-size:21px;font-weight:700;letter-spacing:-.03em;color:var(--ink);text-decoration:none;}
 .brand .mark{width:30px;height:30px;flex-shrink:0;}
 .brand .dot{color:var(--stamp);}
 .spacer{flex:1;}
@@ -189,12 +189,16 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 footer{padding:48px 0 120px;text-align:center;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--ink-3);}
 footer a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line);}
 footer a:hover{color:var(--glow);}
+footer .byline{margin-top:12px;}
+footer .byline a{color:var(--stamp);border-bottom-color:color-mix(in srgb,var(--stamp) 40%,transparent);}
+footer .byline a:hover{color:var(--glow);}
 
 /* ---------- add sheet ---------- */
-.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);z-index:50;opacity:0;transition:opacity .25s;}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);z-index:50;opacity:0;transition:opacity .25s;overscroll-behavior:contain;touch-action:none;}
 .scrim.show{opacity:1;}
 .scrim[hidden]{display:none;}
-.sheet{position:fixed;z-index:51;left:50%;top:50%;transform:translate(-50%,-46%);width:min(560px,calc(100vw - 28px));max-height:90dvh;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:0 40px 90px -30px rgba(0,0,0,.7);opacity:0;transition:opacity .25s,transform .25s;}
+body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden;}
+.sheet{position:fixed;z-index:51;left:50%;top:50%;transform:translate(-50%,-46%);width:min(560px,calc(100vw - 28px));max-height:90dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:0 40px 90px -30px rgba(0,0,0,.7);opacity:0;transition:opacity .25s,transform .25s;}
 .sheet.show{opacity:1;transform:translate(-50%,-50%);}
 .sheet[hidden]{display:none;}
 @media(max-width:560px){.sheet{top:auto;bottom:0;transform:translate(-50%,12px);width:100vw;max-height:92dvh;border-radius:20px 20px 0 0;}.sheet.show{transform:translate(-50%,0);}}
@@ -222,6 +226,9 @@ footer a:hover{color:var(--glow);}
 .field label .req{color:var(--stamp);}
 .field input,.field select,.field textarea{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:11px;padding:11px 13px;outline:none;transition:border-color .2s;}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--glow);}
+.field input[type=date]{-webkit-appearance:none;appearance:none;min-height:46px;}
+.field input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0;}
+.field input[type=date]::-webkit-calendar-picker-indicator{opacity:.5;cursor:pointer;}
 .field textarea{resize:vertical;min-height:62px;line-height:1.5;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:460px){.grid2{grid-template-columns:1fr;}}
@@ -245,7 +252,7 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
 <a class="skip" href="#main">Skip to your shelf</a>
 
 <header class="appbar"><div class="in">
-  <div class="brand"><svg class="mark" viewBox="0 0 120 120" aria-hidden="true" id="brandMark"></svg>Remember<span class="dot">.</span></div>
+  <a class="brand" href="./" aria-label="Remember — home"><svg class="mark" viewBox="0 0 120 120" aria-hidden="true" id="brandMark"></svg>R<span class="dot">.</span></a>
   <div class="spacer"></div>
   <button class="ib" id="themeBtn" aria-label="Toggle light or dark" title="Light / dark">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" id="themeIcon"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
@@ -290,7 +297,7 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
   </div>
 </div></main>
 
-<footer><div class="wrap">Remember &middot; your stubs live on this device &middot; <a href="directions.html">design directions</a></div></footer>
+<footer><div class="wrap">Remember &middot; your stubs live on this device &middot; <a href="directions.html">design directions</a><div class="byline">Built by <a href="https://nikhilballal.com" target="_blank" rel="noopener">Nikhil Ballal</a></div></div></footer>
 
 <!-- add / edit sheet -->
 <div class="scrim" id="scrim" hidden></div>
@@ -533,10 +540,14 @@ function openSheet(){
   var drop=document.getElementById('drop');drop.classList.remove('has');var old=drop.querySelector('img');if(old)old.remove();
   var more=document.querySelector('details.more');if(more)more.open=false;
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
-  scrim.hidden=false;sheet.hidden=false;requestAnimationFrame(function(){scrim.classList.add('show');sheet.classList.add('show');});
-  setTimeout(function(){document.getElementById('f-title').focus();},120);
+  lockScroll();
+  scrim.hidden=false;sheet.hidden=false;sheet.scrollTop=0;requestAnimationFrame(function(){scrim.classList.add('show');sheet.classList.add('show');});
+  if(matchMedia('(min-width:560px)').matches){setTimeout(function(){document.getElementById('f-title').focus();},140);}
 }
-function closeSheet(){scrim.classList.remove('show');sheet.classList.remove('show');setTimeout(function(){scrim.hidden=true;sheet.hidden=true;},240);}
+function closeSheet(){scrim.classList.remove('show');sheet.classList.remove('show');setTimeout(function(){scrim.hidden=true;sheet.hidden=true;unlockScroll();},240);}
+var _lockY=0;
+function lockScroll(){_lockY=window.scrollY||window.pageYOffset||0;document.body.style.top=(-_lockY)+'px';document.body.classList.add('locked');}
+function unlockScroll(){if(!document.body.classList.contains('locked'))return;document.body.classList.remove('locked');document.body.style.top='';window.scrollTo(0,_lockY);}
 document.getElementById('addBtn').addEventListener('click',openSheet);
 document.getElementById('emptyAdd').addEventListener('click',openSheet);
 document.getElementById('closeSheet').addEventListener('click',closeSheet);
@@ -650,7 +661,7 @@ form.addEventListener('submit',async function(e){
   try{await put(t);TICKETS.push(t);
     var tab=document.querySelector('.tab[data-view="'+(isUpcoming(t)?'upcoming':'collected')+'"]');if(tab&&!tab.classList.contains('is-on'))tab.click();
     render();reveal(document.querySelector('.view:not([hidden])'));
-    closeSheet();toast('Kept on your shelf');
+    _lockY=0;closeSheet();toast('Kept on your shelf');
   }catch(err){toast('Could not save');console.error(err);}
 });
 
