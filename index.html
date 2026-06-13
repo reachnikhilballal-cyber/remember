@@ -277,6 +277,8 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
   <div class="menuwrap">
     <button class="ib" id="menuBtn" aria-label="More" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
     <div class="pop" id="menuPop" hidden role="menu">
+      <button id="addManyBtn" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="13" height="13" rx="2"/><path d="M8 21h11a2 2 0 0 0 2-2V8"/></svg>Add many</button>
+      <div class="sep"></div>
       <button id="exportBtn" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>Export backup (.json)</button>
       <button id="importBtn" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21V9m0 0 4 4m-4-4-4 4M5 3h14"/></svg>Import backup</button>
       <div class="sep"></div>
@@ -376,6 +378,7 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
   </div>
 </div>
 
+<input type="file" id="bulkInput" accept="image/*" multiple hidden />
 <input type="file" id="importer" accept="application/json,.json" hidden />
 <div class="toast" id="toast"></div>
 
@@ -759,6 +762,8 @@ function closeBatch(){
 document.getElementById('closeBatch').addEventListener('click',closeBatch);
 document.getElementById('cancelBatch').addEventListener('click',closeBatch);
 document.getElementById('batchSave').addEventListener('click',saveBatch);
+document.getElementById('addManyBtn').addEventListener('click',function(){closeMenu();document.getElementById('bulkInput').click();});
+document.getElementById('bulkInput').addEventListener('change',function(){var fs=Array.prototype.slice.call(this.files);this.value='';if(fs.length)openBatch(fs);});
 
 form.addEventListener('submit',async function(e){
   e.preventDefault();
