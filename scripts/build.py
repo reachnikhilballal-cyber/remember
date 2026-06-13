@@ -136,6 +136,7 @@ SHARED_JS = r"""
         var v = b.getAttribute('data-view');
         btns.forEach(function(x){ x.classList.toggle('is-on', x===b); x.setAttribute('aria-selected', String(x===b)); });
         document.querySelectorAll('.view').forEach(function(el){ el.hidden = (el.getAttribute('data-view')!==v); });
+        document.querySelectorAll('[data-view="'+v+'"] .tk').forEach(function(t){ t.classList.add('seen'); });
         window.scrollTo({top:0,behavior:'smooth'});
       });
     });
@@ -268,6 +269,7 @@ body{
 .tk.is-open{transform:translateY(0) rotate(0deg);z-index:3;}
 .tk.is-open .tk-top{box-shadow:0 0 0 1px var(--glow-soft),0 0 36px var(--glow-soft),0 22px 40px -20px rgba(0,0,0,.5);border-color:var(--glow);}
 .tk-body{flex:1;min-width:0;padding:20px 22px;}
+.tk-cat-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .tk-cat{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.2em;color:var(--stamp);text-transform:uppercase;}
 .tk-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:8px;line-height:1.05;}
 .tk-sub{font-size:13px;color:var(--ink-2);margin-top:3px;}
@@ -280,7 +282,7 @@ body{
 .tk-admit{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.2em;color:var(--ink-3);writing-mode:vertical-rl;transform:rotate(180deg);}
 .tk-barcode{flex:1;width:38px;margin:8px 0;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 3px,var(--ink) 3px 4px,transparent 4px 7px);opacity:.7;border-radius:1px;}
 .tk-serial{font-family:'Space Mono',monospace;font-size:9px;color:var(--ink-2);letter-spacing:.04em;}
-.tk-flag{position:absolute;top:10px;right:10px;font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper);background:var(--glow);padding:3px 8px;border-radius:999px;}
+.tk-flag{flex-shrink:0;font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--glow);padding:3px 9px;border-radius:999px;white-space:nowrap;}
 
 /* expand */
 .tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.16,1,.3,1);margin-top:0;}
@@ -337,8 +339,8 @@ footer .hint{margin-bottom:16px;color:var(--ink-2);}
 VINTAGE_RENDER = r"""
   function stub(t){
     return '<article class="tk" tabindex="0" role="button" aria-expanded="false" aria-label="'+esc(t.title)+', tap to open the ticket">'
-      + '<div class="tk-top">'+(t.up?'<span class="tk-flag">'+esc(t.countdown||'Upcoming')+'</span>':'')
-      +   '<div class="tk-body"><div class="tk-cat">'+esc(t.kind)+'</div><div class="tk-title">'+esc(t.title)+'</div><div class="tk-sub">'+esc(t.sub)+'</div><div class="tk-venue">'+esc(t.venue)+'</div><div class="tk-date">'+esc(t.date)+'</div></div>'
+      + '<div class="tk-top">'
+      +   '<div class="tk-body"><div class="tk-cat-row"><span class="tk-cat">'+esc(t.kind)+'</span>'+(t.up?'<span class="tk-flag">'+esc(t.countdown||'Upcoming')+'</span>':'')+'</div><div class="tk-title">'+esc(t.title)+'</div><div class="tk-sub">'+esc(t.sub)+'</div><div class="tk-venue">'+esc(t.venue)+'</div><div class="tk-date">'+esc(t.date)+'</div></div>'
       +   '<div class="tk-perf" aria-hidden="true"></div>'
       +   '<div class="tk-stub"><div class="tk-admit">Admit One</div><div class="tk-barcode"></div><div class="tk-serial">'+esc(t.serial)+'</div></div>'
       + '</div>'
@@ -391,9 +393,10 @@ body{background:var(--bg);color:var(--ed-ink);font-family:'Space Grotesk',system
 .mono{font-family:'JetBrains Mono',monospace;}
 .skip{position:absolute;left:-999px;}.skip:focus{left:16px;top:16px;background:var(--ed-ink);color:var(--bg);padding:8px 14px;border-radius:8px;z-index:99;}
 .wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+@media(max-width:560px){.wrap{padding:0 20px;}.mast .topline{flex-wrap:wrap;gap:2px 12px;font-size:10px;}}
 .mast{padding:54px 0 22px;border-bottom:2px solid var(--ed-ink);}
 .mast .topline{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(14,14,15,.6);}
-.mast h1{font-size:clamp(70px,18vw,250px);font-weight:700;letter-spacing:-.05em;line-height:.82;margin:16px 0 0;}
+.mast h1{font-size:clamp(42px,15.5vw,250px);font-weight:700;letter-spacing:-.05em;line-height:.82;margin:16px 0 0;}
 .mast h1 .dot{color:var(--accent);}
 .mast .sub{display:flex;flex-wrap:wrap;gap:16px 30px;justify-content:space-between;align-items:center;margin-top:20px;}
 .mast .sub p{font-size:clamp(15px,1.6vw,18px);color:rgba(14,14,15,.6);max-width:40ch;}
@@ -417,7 +420,8 @@ body{background:var(--bg);color:var(--ed-ink);font-family:'Space Grotesk',system
 .tk:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
 .tk.is-open{box-shadow:inset 4px 0 0 var(--accent),0 0 0 1px var(--accent),0 18px 40px -22px var(--accent-soft);z-index:3;}
 .tk-head{padding:20px 20px 16px;}
-.tk-row{display:flex;justify-content:space-between;align-items:baseline;}
+.tk-row{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.tk-rt{display:flex;align-items:center;gap:9px;flex-shrink:0;}
 .tk-cat{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);}
 .tk-serial{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:rgba(14,14,15,.38);}
 .tk-title{font-size:clamp(22px,2.5vw,30px);font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:16px;}
@@ -425,7 +429,7 @@ body{background:var(--bg);color:var(--ed-ink);font-family:'Space Grotesk',system
 .tk-foot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:18px;padding-top:12px;border-top:1px dashed var(--ed-line);}
 .tk-venue{font-size:12px;color:rgba(14,14,15,.38);line-height:1.35;}
 .tk-date{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ed-ink);white-space:nowrap;}
-.tk-flag{position:absolute;top:0;right:0;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--accent);padding:4px 9px;}
+.tk-flag{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--accent);padding:3px 9px;white-space:nowrap;}
 .tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.16,1,.3,1);}
 .tk.is-open .tk-note{grid-template-rows:1fr;}
 .tk-note > div{overflow:hidden;}
@@ -461,8 +465,7 @@ footer .in{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;fo
 C_RENDER = r"""
   function stub(t){
     return '<article class="tk" tabindex="0" role="button" aria-expanded="false" aria-label="'+esc(t.title)+', tap to open the ticket">'
-      + (t.up?'<span class="tk-flag">'+esc(t.countdown||'Upcoming')+'</span>':'')
-      + '<div class="tk-head"><div class="tk-row"><span class="tk-cat">'+esc(t.kind)+'</span><span class="tk-serial">'+esc(t.serial)+'</span></div>'
+      + '<div class="tk-head"><div class="tk-row"><span class="tk-cat">'+esc(t.kind)+'</span><span class="tk-rt">'+(t.up?'<span class="tk-flag">'+esc(t.countdown||'Upcoming')+'</span>':'')+'<span class="tk-serial">'+esc(t.serial)+'</span></span></div>'
       +   '<div class="tk-title">'+esc(t.title)+'</div><div class="tk-sub">'+esc(t.sub)+'</div>'
       +   '<div class="tk-foot"><span class="tk-venue">'+esc(t.venue)+'</span><span class="tk-date">'+esc(t.date)+'</span></div></div>'
       + '<div class="tk-note"><div><div class="pad">'+mticket(t)+'</div></div></div>'
