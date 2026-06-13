@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f6f5f2" />
+<title>Remember - The Editorial Wall</title>
+<meta name="description" content="Remember, a nostalgic shelf for the ticket stubs you kept. Concerts, movies, events, one-offs. Tap a stub to light it up and read the memory." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<style>
+
+:root{
+  --bg:#f6f5f2; --card:#ffffff; --ink:#0e0e0f; --ink-2:rgba(14,14,15,.60); --ink-3:rgba(14,14,15,.38);
+  --line:rgba(14,14,15,.12); --line-2:rgba(14,14,15,.07); --accent:#0a3df0; --accent-soft:rgba(10,61,240,.18);
+  --sans:'Space Grotesk',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.5;min-height:100dvh;}
+.skip{position:absolute;left:-999px;}.skip:focus{left:16px;top:16px;background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;z-index:99;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+/* oversized editorial masthead */
+.mast{padding:60px 0 24px;border-bottom:2px solid var(--ink);}
+.mast .topline{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);}
+.mast h1{font-size:clamp(72px,19vw,260px);font-weight:700;letter-spacing:-.05em;line-height:.82;margin:18px 0 0;}
+.mast h1 .dot{color:var(--accent);}
+.mast .sub{display:flex;flex-wrap:wrap;gap:14px 30px;justify-content:space-between;align-items:baseline;margin-top:22px;}
+.mast .sub p{font-size:clamp(15px,1.6vw,18px);color:var(--ink-2);max-width:42ch;}
+.mast .sub .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+
+.cat{padding:48px 0 6px;}
+.cat-h{display:flex;align-items:flex-end;gap:16px;margin-bottom:22px;}
+.cat-h .n{font-family:var(--mono);font-size:13px;color:var(--accent);}
+.cat-h h2{font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.03em;text-transform:uppercase;}
+.cat-h .c{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:auto;padding-bottom:8px;}
+.shelf{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--ink);border-left:1px solid var(--line);}
+@media(max-width:860px){.shelf{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.shelf{grid-template-columns:1fr;}}
+
+/* editorial flat stub cells */
+.tk{
+  position:relative;display:block;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;
+  background:var(--card);border-right:1px solid var(--line);border-bottom:1px solid var(--ink);padding:0;
+  opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease),transform .6s var(--ease),background-color .35s,box-shadow .35s;-webkit-tap-highlight-color:transparent;
+}
+.tk.seen{opacity:1;transform:none;}
+.tk:hover{background:#fff;}
+.tk:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
+.tk.is-open{background:#fff;box-shadow:inset 4px 0 0 var(--accent),0 0 0 1px var(--accent),0 18px 40px -22px var(--accent-soft);z-index:2;}
+.tk-top{padding:20px 20px 16px;}
+.tk-row{display:flex;justify-content:space-between;align-items:baseline;}
+.tk-cat{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);}
+.tk-serial{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);}
+.tk-title{font-size:clamp(22px,2.5vw,30px);font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:16px;}
+.tk-sub{font-size:13px;color:var(--ink-2);margin-top:6px;}
+.tk-foot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:18px;padding-top:12px;border-top:1px dashed var(--line);}
+.tk-venue{font-size:12px;color:var(--ink-3);line-height:1.35;}
+.tk-date{font-family:var(--mono);font-size:11.5px;color:var(--ink);white-space:nowrap;}
+.tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease);}
+.tk.is-open .tk-note{grid-template-rows:1fr;}
+.tk-note > div{overflow:hidden;}
+.tk-note .inner{padding:14px 20px 20px;border-top:1px solid var(--ink);background:linear-gradient(180deg,var(--accent-soft),transparent 70%);}
+.tk-note .seatline{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);}
+.tk-note p{font-size:14.5px;line-height:1.55;color:var(--ink);margin-top:6px;}
+
+footer{padding:60px 0 90px;border-top:2px solid var(--ink);margin-top:50px;}
+footer .in{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-3);}
+footer .hint{color:var(--ink);}
+.badge{position:fixed;left:16px;bottom:16px;z-index:40;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--bg);background:var(--ink);padding:9px 14px;border-radius:999px;text-decoration:none;}
+.badge:hover{background:var(--accent);}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#shelf">Skip to the shelf</a>
+
+<header class="mast"><div class="wrap">
+  <div class="topline"><span>The keepsake index</span><span>Bengaluru &middot; MMXXVI</span></div>
+  <h1>Remember<span class="dot">.</span></h1>
+  <div class="sub"><p>A wall of the stubs you never threw away. Set in type, filed by kind. Tap any one to pull the memory out of it.</p><span class="tag">10 stubs &middot; tap to expand</span></div>
+</div></header>
+<main id="shelf"></main>
+<footer><div class="wrap in"><span class="hint">Tap a stub to read it.</span><span>Remember &middot; The Editorial Wall</span></div></footer>
+
+<a class="badge" href="index.html">Remember C</a>
+<script>
+'use strict';
+var TICKETS = [{"cat": "Concerts", "kind": "CONCERT", "title": "Coldplay", "sub": "Music of the Spheres", "venue": "Narendra Modi Stadium, Ahmedabad", "date": "26 Jan 2025", "serial": "CP-7741-C14", "seat": "Section C14", "note": "Seventy-thousand wristbands turned the stands into a slow galaxy. Fix You at full voice, nobody sat down."}, {"cat": "Concerts", "kind": "CONCERT", "title": "Diljit Dosanjh", "sub": "Dil-Luminati Tour", "venue": "Bengaluru", "date": "08 Dec 2024", "serial": "DL-2210-GA", "seat": "General", "note": "The whole ground did bhangra at the same beat. First Punjabi gig that felt like a festival."}, {"cat": "Concerts", "kind": "CONCERT", "title": "A.R. Rahman", "sub": "Marakkuma Nenjam", "venue": "YMCA Grounds, Chennai", "date": "10 Sep 2023", "serial": "ARR-0096-B", "seat": "Block B", "note": "Roja melting into Kun Faya Kun. Thirty thousand people, one collective shiver."}, {"cat": "Movies", "kind": "IMAX 70MM", "title": "Oppenheimer", "sub": "Christopher Nolan", "venue": "PVR Orion, Bengaluru", "date": "21 Jul 2023", "serial": "OPP-H7-IMAX", "seat": "Seat H7", "note": "Three hours, no break, no popcorn. The silence after the Trinity test was deafening."}, {"cat": "Movies", "kind": "IMAX", "title": "Dune: Part Two", "sub": "Denis Villeneuve", "venue": "PVR, Bengaluru", "date": "01 Mar 2024", "serial": "DUN-F12-X", "seat": "Seat F12", "note": "Saw it twice in one week. The Fremen war cry still lives somewhere in my chest."}, {"cat": "Movies", "kind": "70MM RE-RELEASE", "title": "Interstellar", "sub": "10th Anniversary", "venue": "Bengaluru", "date": "16 Nov 2024", "serial": "INT-J9-10Y", "seat": "Seat J9", "note": "Cried at the docking scene, again. Hans Zimmer in 70mm is basically a religion."}, {"cat": "Events", "kind": "IPL", "title": "RCB vs CSK", "sub": "Indian Premier League", "venue": "M. Chinnaswamy Stadium, Bengaluru", "date": "18 May 2024", "serial": "RCB-UT-441", "seat": "Upper Tier", "note": "Kohli at the boundary rope, forty thousand in red. Lost the game, kept the roar."}, {"cat": "Events", "kind": "WORLD CUP FINAL", "title": "India vs Australia", "sub": "ICC Cricket World Cup", "venue": "Narendra Modi Stadium, Ahmedabad", "date": "19 Nov 2023", "serial": "WC-FIN-2023", "seat": "Lower Block", "note": "1.3 lakh people went silent at the same moment. Heartbreak, but what a night to be in the room."}, {"cat": "One-off", "kind": "STAND-UP", "title": "Zakir Khan", "sub": "Tathastu", "venue": "Bengaluru", "date": "04 Mar 2023", "serial": "ZK-M-018", "seat": "Row M", "note": "Sakht launda, softened. Laughed till it hurt, then he made the whole hall go quiet."}, {"cat": "One-off", "kind": "FESTIVAL", "title": "NH7 Weekender", "sub": "The Happiest Music Festival", "venue": "Pune", "date": "26 Nov 2022", "serial": "NH7-3DAY-22", "seat": "3-day pass", "note": "Found four bands I now love. Mud, filter coffee, and the best sunset set of my life."}];
+var ORDER = ["Concerts", "Movies", "Events", "One-off"];
+
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function ticket(t){
+    return '<article class="tk" tabindex="0" role="button" aria-expanded="false" aria-label="'+esc(t.title)+', tap to read the memory">'
+      + '<div class="tk-top"><div class="tk-row"><span class="tk-cat">'+esc(t.kind)+'</span><span class="tk-serial">'+esc(t.serial)+'</span></div>'
+      +   '<div class="tk-title">'+esc(t.title)+'</div><div class="tk-sub">'+esc(t.sub)+'</div>'
+      +   '<div class="tk-foot"><span class="tk-venue">'+esc(t.venue)+'</span><span class="tk-date">'+esc(t.date)+'</span></div></div>'
+      + '<div class="tk-note"><div><div class="inner"><div class="seatline">'+esc(t.seat)+'</div><p>'+esc(t.note)+'</p></div></div></div>'
+      + '</article>';
+  }
+  function render(){
+    var root = document.getElementById('shelf'); var html='';
+    ORDER.forEach(function(cat,i){
+      var items = TICKETS.filter(function(t){return t.cat===cat;});
+      if(!items.length) return;
+      html += '<section class="cat"><div class="wrap"><div class="cat-h"><span class="n">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+' stubs</span></div><div class="shelf">'+items.map(ticket).join('')+'</div></div></section>';
+    });
+    root.innerHTML = html;
+  }
+
+
+  function wire(){
+    document.querySelectorAll('.tk').forEach(function(el){
+      function toggle(){
+        var open = el.classList.toggle('is-open');
+        el.setAttribute('aria-expanded', String(open));
+      }
+      el.addEventListener('click', toggle);
+      el.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+      });
+    });
+  }
+
+(function(){
+  render();
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('seen'); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.tk').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.tk').forEach(function(el){ el.classList.add('seen'); });
+  }
+  wire();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#efe7d6" />
+<title>Remember - The Vintage Shelf</title>
+<meta name="description" content="Remember, a nostalgic shelf for the ticket stubs you kept. Concerts, movies, events, one-offs. Tap a stub to light it up and read the memory." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" />
+<style>
+
+:root{
+  --paper:#efe7d6; --paper-2:#e7dcc6; --card:#f7f1e3; --ink:#211c15; --ink-2:rgba(33,28,21,.62);
+  --ink-3:rgba(33,28,21,.40); --line:rgba(33,28,21,.16); --line-2:rgba(33,28,21,.10);
+  --glow:#cf7a2c; --glow-soft:rgba(207,122,44,.30); --stamp:#b23a2e;
+  --sans:'Space Grotesk',system-ui,sans-serif; --mono:'Space Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.5;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.45), transparent 38%),
+    radial-gradient(circle at 86% 84%, rgba(150,120,70,.10), transparent 46%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+  min-height:100dvh;
+}
+.skip{position:absolute;left:-999px;}.skip:focus{left:16px;top:16px;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;z-index:99;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+
+/* masthead */
+.mast{padding:72px 0 30px;text-align:center;}
+.mast .eye{font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--stamp);}
+.mast h1{font-size:clamp(56px,11vw,104px);font-weight:700;letter-spacing:-.04em;line-height:.9;margin-top:10px;}
+.mast h1 .dot{color:var(--stamp);}
+.mast .sub{margin-top:16px;font-size:clamp(15px,1.7vw,18px);color:var(--ink-2);max-width:46ch;margin-inline:auto;}
+.mast .meta{margin-top:18px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink-3);}
+.rule{height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 8px,transparent 8px 16px);margin:8px 0 0;}
+
+/* category section */
+.cat{padding:40px 0 8px;}
+.cat-h{display:flex;align-items:baseline;gap:14px;margin-bottom:26px;}
+.cat-h .n{font-family:var(--mono);font-size:12px;color:var(--stamp);letter-spacing:.1em;}
+.cat-h h2{font-size:26px;font-weight:600;letter-spacing:-.01em;}
+.cat-h .c{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:auto;}
+.shelf{display:grid;grid-template-columns:repeat(2,1fr);gap:26px 28px;}
+@media(max-width:720px){.shelf{grid-template-columns:1fr;}}
+
+/* the ticket stub */
+.tk{
+  position:relative;display:block;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;
+  background:transparent;border:0;padding:0;
+  opacity:0;transform:translateY(16px) rotate(var(--tilt,0deg));
+  transition:opacity .7s var(--ease),transform .7s var(--ease),filter .45s var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.tk.seen{opacity:1;transform:translateY(0) rotate(var(--tilt,0deg));}
+.tk:nth-child(odd){--tilt:-1.1deg;}.tk:nth-child(even){--tilt:1deg;}
+.tk-top{
+  position:relative;display:flex;background:var(--card);
+  border-radius:10px;overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 14px 30px -18px rgba(33,28,21,.5), 0 1px 2px rgba(33,28,21,.12);
+  border:1px solid var(--line-2);
+}
+.tk:hover{transform:translateY(-2px) rotate(0deg);}
+.tk:focus-visible{outline:0;}
+.tk:focus-visible .tk-top{outline:2px solid var(--glow);outline-offset:3px;}
+/* glow + straighten on open */
+.tk.is-open{transform:translateY(0) rotate(0deg) scale(1.012);z-index:2;}
+.tk.is-open .tk-top{
+  box-shadow:0 0 0 1px var(--glow-soft), 0 0 34px var(--glow-soft), 0 22px 40px -20px rgba(33,28,21,.55);
+  border-color:var(--glow);
+}
+.tk-body{flex:1;min-width:0;padding:20px 22px;}
+.tk-cat{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--stamp);text-transform:uppercase;}
+.tk-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:8px;line-height:1.05;}
+.tk-sub{font-size:13px;color:var(--ink-2);margin-top:3px;}
+.tk-venue{font-size:12.5px;color:var(--ink-3);margin-top:14px;line-height:1.4;}
+.tk-date{font-family:var(--mono);font-size:12px;color:var(--ink);margin-top:6px;letter-spacing:.02em;}
+/* perforation */
+.tk-perf{position:relative;width:0;border-left:2px dashed var(--line);}
+.tk-perf::before,.tk-perf::after{content:"";position:absolute;left:-9px;width:18px;height:18px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line-2);}
+.tk-perf::before{top:-9px;}.tk-perf::after{bottom:-9px;}
+/* stub end */
+.tk-stub{width:120px;flex-shrink:0;padding:18px 16px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(33,28,21,.03),rgba(33,28,21,.06));text-align:center;}
+.tk-admit{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--ink-3);writing-mode:vertical-rl;transform:rotate(180deg);}
+.tk-barcode{flex:1;width:40px;margin:8px 0;align-self:center;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 3px,var(--ink) 3px 4px,transparent 4px 7px);opacity:.78;border-radius:1px;}
+.tk-serial{font-family:var(--mono);font-size:9px;color:var(--ink-2);letter-spacing:.04em;}
+/* the memory, revealed on open */
+.tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--ease);}
+.tk.is-open .tk-note{grid-template-rows:1fr;}
+.tk-note > div{overflow:hidden;}
+.tk-note p{padding:16px 6px 4px;font-size:14.5px;line-height:1.55;color:var(--ink);max-width:54ch;}
+.tk-note .seatline{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stamp);margin-top:2px;padding:0 6px 2px;}
+
+footer{padding:60px 0 80px;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-3);}
+footer .hint{margin-bottom:18px;color:var(--ink-2);}
+.badge{position:fixed;left:16px;bottom:16px;z-index:40;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);background:var(--card);border:1px solid var(--line);padding:8px 13px;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px -8px rgba(33,28,21,.4);}
+.badge:hover{color:var(--stamp);border-color:var(--glow);}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#shelf">Skip to the shelf</a>
+
+<header class="mast"><div class="wrap">
+  <div class="eye">A shelf for the ones you kept</div>
+  <h1>Remember<span class="dot">.</span></h1>
+  <p class="sub">The ticket stubs we used to keep in a drawer. The concert, the film, the match, the night. Tap a stub to light it up and read what it was.</p>
+  <div class="meta">10 stubs &middot; 4 shelves &middot; est. 2026</div>
+  <div class="rule"></div>
+</div></header>
+<main id="shelf"></main>
+<footer><div class="wrap"><div class="hint">Tap any stub to remember it.</div>Remember &middot; The Vintage Shelf</div></footer>
+
+<a class="badge" href="index.html">Remember A</a>
+<script>
+'use strict';
+var TICKETS = [{"cat": "Concerts", "kind": "CONCERT", "title": "Coldplay", "sub": "Music of the Spheres", "venue": "Narendra Modi Stadium, Ahmedabad", "date": "26 Jan 2025", "serial": "CP-7741-C14", "seat": "Section C14", "note": "Seventy-thousand wristbands turned the stands into a slow galaxy. Fix You at full voice, nobody sat down."}, {"cat": "Concerts", "kind": "CONCERT", "title": "Diljit Dosanjh", "sub": "Dil-Luminati Tour", "venue": "Bengaluru", "date": "08 Dec 2024", "serial": "DL-2210-GA", "seat": "General", "note": "The whole ground did bhangra at the same beat. First Punjabi gig that felt like a festival."}, {"cat": "Concerts", "kind": "CONCERT", "title": "A.R. Rahman", "sub": "Marakkuma Nenjam", "venue": "YMCA Grounds, Chennai", "date": "10 Sep 2023", "serial": "ARR-0096-B", "seat": "Block B", "note": "Roja melting into Kun Faya Kun. Thirty thousand people, one collective shiver."}, {"cat": "Movies", "kind": "IMAX 70MM", "title": "Oppenheimer", "sub": "Christopher Nolan", "venue": "PVR Orion, Bengaluru", "date": "21 Jul 2023", "serial": "OPP-H7-IMAX", "seat": "Seat H7", "note": "Three hours, no break, no popcorn. The silence after the Trinity test was deafening."}, {"cat": "Movies", "kind": "IMAX", "title": "Dune: Part Two", "sub": "Denis Villeneuve", "venue": "PVR, Bengaluru", "date": "01 Mar 2024", "serial": "DUN-F12-X", "seat": "Seat F12", "note": "Saw it twice in one week. The Fremen war cry still lives somewhere in my chest."}, {"cat": "Movies", "kind": "70MM RE-RELEASE", "title": "Interstellar", "sub": "10th Anniversary", "venue": "Bengaluru", "date": "16 Nov 2024", "serial": "INT-J9-10Y", "seat": "Seat J9", "note": "Cried at the docking scene, again. Hans Zimmer in 70mm is basically a religion."}, {"cat": "Events", "kind": "IPL", "title": "RCB vs CSK", "sub": "Indian Premier League", "venue": "M. Chinnaswamy Stadium, Bengaluru", "date": "18 May 2024", "serial": "RCB-UT-441", "seat": "Upper Tier", "note": "Kohli at the boundary rope, forty thousand in red. Lost the game, kept the roar."}, {"cat": "Events", "kind": "WORLD CUP FINAL", "title": "India vs Australia", "sub": "ICC Cricket World Cup", "venue": "Narendra Modi Stadium, Ahmedabad", "date": "19 Nov 2023", "serial": "WC-FIN-2023", "seat": "Lower Block", "note": "1.3 lakh people went silent at the same moment. Heartbreak, but what a night to be in the room."}, {"cat": "One-off", "kind": "STAND-UP", "title": "Zakir Khan", "sub": "Tathastu", "venue": "Bengaluru", "date": "04 Mar 2023", "serial": "ZK-M-018", "seat": "Row M", "note": "Sakht launda, softened. Laughed till it hurt, then he made the whole hall go quiet."}, {"cat": "One-off", "kind": "FESTIVAL", "title": "NH7 Weekender", "sub": "The Happiest Music Festival", "venue": "Pune", "date": "26 Nov 2022", "serial": "NH7-3DAY-22", "seat": "3-day pass", "note": "Found four bands I now love. Mud, filter coffee, and the best sunset set of my life."}];
+var ORDER = ["Concerts", "Movies", "Events", "One-off"];
+
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function ticket(t){
+    return '<article class="tk" tabindex="0" role="button" aria-expanded="false" aria-label="'+esc(t.title)+', tap to read the memory">'
+      + '<div class="tk-top">'
+      +   '<div class="tk-body">'
+      +     '<div class="tk-cat">'+esc(t.kind)+'</div>'
+      +     '<div class="tk-title">'+esc(t.title)+'</div>'
+      +     '<div class="tk-sub">'+esc(t.sub)+'</div>'
+      +     '<div class="tk-venue">'+esc(t.venue)+'</div>'
+      +     '<div class="tk-date">'+esc(t.date)+'</div>'
+      +   '</div>'
+      +   '<div class="tk-perf" aria-hidden="true"></div>'
+      +   '<div class="tk-stub"><div class="tk-admit">Admit One</div><div class="tk-barcode"></div><div class="tk-serial">'+esc(t.serial)+'</div></div>'
+      + '</div>'
+      + '<div class="tk-note"><div><div class="seatline">'+esc(t.seat)+'</div><p>'+esc(t.note)+'</p></div></div>'
+      + '</article>';
+  }
+  function render(){
+    var root = document.getElementById('shelf'); var html='';
+    ORDER.forEach(function(cat,i){
+      var items = TICKETS.filter(function(t){return t.cat===cat;});
+      if(!items.length) return;
+      html += '<section class="cat"><div class="wrap"><div class="cat-h"><span class="n">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+' kept</span></div><div class="shelf">'+items.map(ticket).join('')+'</div></div></section>';
+    });
+    root.innerHTML = html;
+  }
+
+
+  function wire(){
+    document.querySelectorAll('.tk').forEach(function(el){
+      function toggle(){
+        var open = el.classList.toggle('is-open');
+        el.setAttribute('aria-expanded', String(open));
+      }
+      el.addEventListener('click', toggle);
+      el.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+      });
+    });
+  }
+
+(function(){
+  render();
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('seen'); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.tk').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.tk').forEach(function(el){ el.classList.add('seen'); });
+  }
+  wire();
+})();
+</script>
+</body>
+</html>
