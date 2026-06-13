@@ -4,6 +4,7 @@
 cap-*.html
 pr-*.html
 *probe*.html
+_shot.html
 ocrtest.html
 parsetest.html
 tessload.html
