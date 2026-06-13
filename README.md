@@ -46,6 +46,9 @@ ahead. The whole thing runs in your browser; nothing leaves your device.
   / Import** a JSON backup from the menu to move between devices.
 - **Light & dark, installable, offline.** A theme toggle, Add-to-Home-Screen, and it works
   without a connection once loaded.
+- **Find & tend your shelf.** Search by title / venue / artist, **edit** any stub (with an
+  *Undo* if you remove one), **tap the photo** to see the full ticket, and **add upcoming
+  events to your calendar** (`.ics`). A running line keeps count of what you've kept.
 
 <table>
 <tr>
@@ -111,8 +114,8 @@ fullstop — and the PWA icons are generated from [`icon.svg`](icon.svg) via
 
 ## ✦ Roadmap ideas
 
-Search · edit a stub (not just delete) · tap-to-zoom the ticket photo · undo on delete ·
-add-to-calendar for upcoming · a year-in-review. PRs and ideas welcome.
+Skip duplicates on bulk import · share a stub as an image card · an install nudge · sort
+within a shelf · haptics on tap. PRs and ideas welcome.
 
 ---
 

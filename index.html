@@ -74,6 +74,17 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .hero h1{font-size:clamp(42px,9vw,76px);font-weight:700;letter-spacing:-.04em;line-height:.92;margin-top:8px;}
 .hero h1 .dot{color:var(--stamp);}
 .hero p{margin-top:13px;font-size:clamp(14px,1.6vw,16.5px);color:var(--ink-2);max-width:44ch;margin-inline:auto;}
+.hero .stats{margin-top:14px;font-family:'Space Mono',monospace;font-size:11.5px;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase;}
+.hero .stats[hidden]{display:none;}
+.hero .stats b{color:var(--glow);font-weight:400;}
+.searchbar{display:flex;align-items:center;gap:10px;margin:0 0 26px;padding:11px 16px;border:1px solid var(--line-2);border-radius:14px;background:color-mix(in srgb,var(--card) 60%,transparent);}
+.searchbar[hidden]{display:none;}
+.searchbar svg{width:17px;height:17px;color:var(--ink-3);flex-shrink:0;}
+.searchbar input{flex:1;min-width:0;font:inherit;font-size:15px;color:var(--ink);background:none;border:0;outline:none;}
+.searchbar input::placeholder{color:var(--ink-3);}
+.search-clear{flex-shrink:0;width:26px;height:26px;border-radius:50%;border:0;background:var(--line-2);color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.search-clear[hidden]{display:none;}
+.search-clear svg{width:13px;height:13px;color:inherit;}
 .tabs{display:inline-flex;gap:6px;margin-top:22px;padding:5px;border:1px solid var(--line-2);border-radius:999px;background:color-mix(in srgb,var(--card) 70%,transparent);}
 .tab{font:inherit;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);background:none;border:0;cursor:pointer;padding:9px 18px;border-radius:999px;transition:background .25s,color .25s;}
 .tab.is-on{background:var(--ink);color:var(--paper);}
@@ -135,10 +146,12 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .tk-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:0;}
 .chip{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.03em;color:var(--mtk-ink-2);border:1px solid var(--mtk-line);border-radius:999px;padding:4px 10px;}
 .chip b{color:var(--glow);font-weight:400;}
-.tk-actions{display:flex;gap:8px;margin-top:13px;justify-content:flex-end;}
-.tk-del{font:inherit;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.04em;color:var(--ink-3);background:none;border:1px solid var(--line);border-radius:999px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.tk-actions{display:flex;gap:8px;margin-top:13px;justify-content:flex-end;flex-wrap:wrap;}
+.tk-act,.tk-del{font:inherit;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.04em;color:var(--ink-3);background:none;border:1px solid var(--line);border-radius:999px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.tk-act:hover{color:var(--glow);border-color:var(--glow);}
 .tk-del:hover{color:var(--stamp);border-color:var(--stamp);}
-.tk-del svg{width:13px;height:13px;}
+.tk-act svg,.tk-del svg{width:13px;height:13px;}
+.tk-photo img{cursor:zoom-in;}
 
 /* recreated M-ticket (no-photo) */
 .mtk{background:var(--mtk-bg);color:var(--mtk-ink);border-radius:14px;overflow:hidden;border:1px solid var(--mtk-line);box-shadow:var(--shadow);}
@@ -186,6 +199,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .empty .add{margin-top:20px;}
 .empty .linkbtn{margin-top:14px;font:inherit;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--ink-2);background:none;border:0;cursor:pointer;border-bottom:1px solid var(--line);padding:2px 0;}
 .empty .linkbtn:hover{color:var(--glow);border-color:var(--glow);}
+.empty.searching .add,.empty.searching .linkbtn{display:none;}
 .empty[hidden]{display:none;}
 
 footer{padding:48px 0 120px;text-align:center;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--ink-3);}
@@ -246,8 +260,14 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
 .btn-primary:hover{filter:brightness(1.06);}.btn-primary:active{transform:scale(.99);}
 
 /* toast */
-.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:var(--paper);font-size:13.5px;padding:11px 18px;border-radius:999px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;box-shadow:0 14px 30px -12px rgba(0,0,0,.5);}
-.toast.show{opacity:1;transform:translate(-50%,0);}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);display:flex;align-items:center;gap:14px;background:var(--ink);color:var(--paper);font-size:13.5px;padding:10px 12px 10px 18px;border-radius:999px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;box-shadow:0 14px 30px -12px rgba(0,0,0,.5);max-width:calc(100vw - 32px);}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto;}
+.toast-action{font:inherit;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--glow);background:none;border:0;border-left:1px solid rgba(255,255,255,.18);padding:2px 4px 2px 14px;cursor:pointer;flex-shrink:0;}
+.toast-action[hidden]{display:none;}
+.lightbox{position:fixed;inset:0;z-index:80;background:rgba(8,6,4,.92);display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out;opacity:0;transition:opacity .2s;}
+.lightbox.show{opacity:1;}
+.lightbox[hidden]{display:none;}
+.lightbox img{max-width:94vw;max-height:92vh;border-radius:12px;box-shadow:0 30px 80px -20px rgba(0,0,0,.8);}
 
 /* bulk import */
 .batch-prog{display:flex;align-items:center;gap:9px;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.03em;color:var(--ink-2);min-height:18px;margin-bottom:6px;}
@@ -295,6 +315,7 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
   <div class="eye">A shelf for the ones you kept</div>
   <h1>Remember<span class="dot">.</span></h1>
   <p>The ticket stubs we used to keep in a drawer. Add one, then tap it to light it up and pull out the original ticket, and the memory.</p>
+  <p class="stats" id="stats" hidden></p>
   <div class="tabs" role="tablist" aria-label="Which tickets">
     <button class="tab is-on" role="tab" aria-selected="true" data-view="collected">Collected</button>
     <button class="tab" role="tab" aria-selected="false" data-view="upcoming">Upcoming <span class="n" id="upN">0</span></button>
@@ -307,6 +328,11 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
 </div></section>
 
 <main id="main"><div class="wrap">
+  <div class="searchbar" id="searchbar" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="search" type="search" placeholder="Search your stubs…" aria-label="Search your stubs" autocomplete="off" />
+    <button class="search-clear" id="searchClear" type="button" aria-label="Clear search" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
   <div class="view" data-view="collected" id="collected"></div>
   <div class="view" data-view="upcoming" id="upcoming" hidden></div>
   <div class="empty" id="empty" hidden>
@@ -383,7 +409,8 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
 
 <input type="file" id="bulkInput" accept="image/*" multiple hidden />
 <input type="file" id="importer" accept="application/json,.json" hidden />
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button class="toast-action" id="toastAction" type="button" hidden></button></div>
+<div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt="Your ticket" /></div>
 
 <script>
 'use strict';
@@ -491,30 +518,48 @@ function stub(t){
     +   '<div class="tk-perf" aria-hidden="true"></div>'
     +   '<div class="tk-stub"><div class="tk-admit">Admit One</div><div class="tk-barcode"></div><div class="tk-serial">'+esc(t.serial||serialFor(t))+'</div></div></div>'
     + '<div class="tk-note"><div>'+expandInner(t)
-    +   '<div class="tk-actions"><button class="tk-del" data-del="'+esc(t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg>Remove</button></div>'
+    +   '<div class="tk-actions">'
+    +     (up?'<button class="tk-act" type="button" data-cal="'+esc(t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Calendar</button>':'')
+    +     '<button class="tk-act" type="button" data-edit="'+esc(t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit</button>'
+    +     '<button class="tk-del" type="button" data-del="'+esc(t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg>Remove</button>'
+    +   '</div>'
     + '</div></div></article>';
 }
 
-var TICKETS=[];
+var TICKETS=[], searchQuery='';
+function matchQuery(t){
+  if(!searchQuery)return true;
+  return [t.title,t.sub,t.venue,t.kind,t.provider,t.seats,t.note,t.cat].join(' ').toLowerCase().indexOf(searchQuery)>=0;
+}
+function renderStats(pastAll,upAll){
+  var el=document.getElementById('stats');var kept=pastAll.length;
+  if(!kept){el.hidden=true;return;}
+  var years=pastAll.map(function(t){return (t.date||'').slice(0,4);}).filter(Boolean).sort();
+  var span=years.length?(years[0]===years[years.length-1]?years[0]:years[0]+'–'+years[years.length-1]):'';
+  el.innerHTML='<b>'+kept+'</b> stub'+(kept===1?'':'s')+' kept'+(span?' &middot; '+span:'')+(upAll.length?' &middot; <b>'+upAll.length+'</b> upcoming':'');
+  el.hidden=false;
+}
 function render(){
   _urls.forEach(function(u){URL.revokeObjectURL(u);});_urls=[];
-  var up=TICKETS.filter(isUpcoming);
-  var past=TICKETS.filter(function(t){return !isUpcoming(t);});
+  var upAll=TICKETS.filter(isUpcoming), pastAll=TICKETS.filter(function(t){return !isUpcoming(t);});
+  var up=upAll.filter(matchQuery), past=pastAll.filter(matchQuery);
   up.sort(function(a,b){return daysUntil(a.date)-daysUntil(b.date);});
   past.sort(function(a,b){return (a.date<b.date?1:-1);});
-  document.getElementById('upN').textContent=up.length;
+  document.getElementById('upN').textContent=upAll.length;
   var col=document.getElementById('collected'),h='';
   ORDER.forEach(function(cat,i){
     var items=past.filter(function(t){return t.cat===cat;});
     if(!items.length)return;
-    h+='<section class="cat"><div class="cat-h"><span class="nx">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+' kept</span></div><div class="shelf">'+items.map(stub).join('')+'</div></section>';
+    h+='<section class="cat"><div class="cat-h"><span class="nx">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+(searchQuery?' found':' kept')+'</span></div><div class="shelf">'+items.map(stub).join('')+'</div></section>';
   });
   col.innerHTML=h;
   document.getElementById('upcoming').innerHTML = up.length
-    ? '<section class="cat"><div class="cat-h"><span class="nx">&#9733;</span><h2>Upcoming</h2><span class="c">'+up.length+' booked</span></div><div class="shelf">'+up.map(stub).join('')+'</div></section>'
+    ? '<section class="cat"><div class="cat-h"><span class="nx">&#9733;</span><h2>Upcoming</h2><span class="c">'+up.length+(searchQuery?' found':' booked')+'</span></div><div class="shelf">'+up.map(stub).join('')+'</div></section>'
     : '';
+  document.getElementById('searchbar').hidden = (TICKETS.length===0);
   updateEmpty();
-  document.getElementById('banner').hidden = !TICKETS.some(function(t){return t.sample;});
+  document.getElementById('banner').hidden = (!TICKETS.some(function(t){return t.sample;}) || !!searchQuery);
+  renderStats(pastAll,upAll);
   wire();
 }
 function updateEmpty(){
@@ -523,9 +568,15 @@ function updateEmpty(){
   var has=cur&&cur.querySelector('.tk');
   var emptyEl=document.getElementById('empty');
   emptyEl.hidden=!!has;
+  emptyEl.classList.toggle('searching',!!searchQuery);
   if(!has){
-    document.getElementById('emptyH').textContent = view==='upcoming'?'Nothing booked yet':(TICKETS.length?'No collected stubs':'No stubs yet');
-    document.getElementById('emptyP').textContent = view==='upcoming'?'Add a ticket with a future date and it waits here with its QR.':'Add a ticket and it lands on the right shelf.';
+    if(searchQuery){
+      document.getElementById('emptyH').textContent='No matches';
+      document.getElementById('emptyP').textContent='Nothing here matches “'+searchQuery+'”.';
+    }else{
+      document.getElementById('emptyH').textContent = view==='upcoming'?'Nothing booked yet':(TICKETS.length?'No collected stubs':'No stubs yet');
+      document.getElementById('emptyP').textContent = view==='upcoming'?'Add a ticket with a future date and it waits here with its QR.':'Add a ticket and it lands on the right shelf.';
+    }
   }
 }
 function reveal(viewEl){if(viewEl)viewEl.querySelectorAll('.tk').forEach(function(t){t.classList.add('seen');});}
@@ -535,9 +586,12 @@ function wire(){
     function toggle(){var o=el.classList.toggle('is-open');el.setAttribute('aria-expanded',String(o));}
     el.addEventListener('click',function(e){
       var d=e.target.closest('[data-del]'); if(d){e.stopPropagation();removeTicket(d.getAttribute('data-del'));return;}
+      var ed=e.target.closest('[data-edit]'); if(ed){e.stopPropagation();editTicket(ed.getAttribute('data-edit'));return;}
+      var cl=e.target.closest('[data-cal]'); if(cl){e.stopPropagation();addToCalendar(cl.getAttribute('data-cal'));return;}
+      var im=e.target.closest('.tk-photo img'); if(im){e.stopPropagation();openLightbox(im.getAttribute('src'));return;}
       toggle();
     });
-    el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){if(e.target.closest('[data-del]'))return;e.preventDefault();toggle();}});
+    el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){if(e.target.closest('button')||e.target.closest('a'))return;e.preventDefault();toggle();}});
   });
 }
 
@@ -553,7 +607,12 @@ document.querySelectorAll('.tab').forEach(function(b){
 });
 
 /* ---------- toast ---------- */
-var toastT;function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show');},2200);}
+var toastT;
+function toast(msg){var el=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;document.getElementById('toastAction').hidden=true;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show');},2400);}
+function toastUndo(msg,fn){var el=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;var act=document.getElementById('toastAction');act.hidden=false;act.textContent='Undo';act.onclick=function(){act.onclick=null;el.classList.remove('show');clearTimeout(toastT);fn();};el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show');act.onclick=null;},5400);}
+function openLightbox(src){if(!src)return;var lb=document.getElementById('lightbox');document.getElementById('lightboxImg').src=src;lb.hidden=false;requestAnimationFrame(function(){lb.classList.add('show');});}
+function closeLightbox(){var lb=document.getElementById('lightbox');lb.classList.remove('show');setTimeout(function(){lb.hidden=true;document.getElementById('lightboxImg').src='';},200);}
+document.getElementById('lightbox').addEventListener('click',closeLightbox);
 
 /* ---------- theme ---------- */
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('rm-theme',t);}catch(e){}
@@ -572,16 +631,32 @@ document.addEventListener('click',function(e){if(!menuPop.hidden&&!e.target.clos
 
 /* ---------- add sheet ---------- */
 var scrim=document.getElementById('scrim'),sheet=document.getElementById('sheet'),form=document.getElementById('ticketForm');
-var pendingPhoto=null;
-function openSheet(){
-  form.reset();pendingPhoto=null;dropStatus(false);
+var pendingPhoto=null, editingId=null, editingPhoto=null;
+function openSheet(ticket){
+  if(ticket&&ticket.preventDefault)ticket=null;
+  form.reset();pendingPhoto=null;editingId=null;editingPhoto=null;dropStatus(false);
   var drop=document.getElementById('drop');drop.classList.remove('has');var old=drop.querySelector('img');if(old)old.remove();
   var more=document.querySelector('details.more');if(more)more.open=false;
-  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  var st=document.getElementById('sheetTitle'),sb=document.getElementById('saveBtn');
+  if(ticket&&ticket.id){
+    editingId=ticket.id;editingPhoto=ticket.photo||null;
+    st.textContent='Edit ticket';sb.textContent='Save changes';
+    var sv=function(id,v){document.getElementById(id).value=v||'';};
+    sv('f-title',ticket.title);document.getElementById('f-cat').value=ticket.cat||'Concerts';
+    sv('f-date',ticket.date);sv('f-sub',ticket.sub);sv('f-venue',ticket.venue);sv('f-note',ticket.note);
+    sv('f-time',ticket.time);sv('f-format',ticket.format);sv('f-screen',ticket.screen);sv('f-seats',ticket.seats);
+    sv('f-booking',ticket.bookingId);sv('f-price',ticket.price);sv('f-count',ticket.count);sv('f-provider',ticket.provider);
+    if(ticket.photo)showPreview(ticket.photo);
+    if(ticket.time||ticket.format||ticket.screen||ticket.seats||ticket.bookingId||ticket.price||ticket.count||ticket.provider){if(more)more.open=true;}
+  }else{
+    st.textContent='Add a ticket';sb.textContent='Keep this stub';
+    document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  }
   lockScroll();
   scrim.hidden=false;sheet.hidden=false;sheet.scrollTop=0;requestAnimationFrame(function(){scrim.classList.add('show');sheet.classList.add('show');});
   if(matchMedia('(min-width:560px)').matches){setTimeout(function(){document.getElementById('f-title').focus();},140);}
 }
+function editTicket(id){var t=TICKETS.find(function(x){return x.id===id;});if(t)openSheet(t);}
 function closeSheet(){scrim.classList.remove('show');sheet.classList.remove('show');setTimeout(function(){scrim.hidden=true;sheet.hidden=true;unlockScroll();},240);}
 var _lockY=0;
 function lockScroll(){_lockY=window.scrollY||window.pageYOffset||0;document.body.style.top=(-_lockY)+'px';document.body.classList.add('locked');}
@@ -592,7 +667,7 @@ document.getElementById('emptyAddMany').addEventListener('click',function(){docu
 document.getElementById('closeSheet').addEventListener('click',closeSheet);
 document.getElementById('cancelBtn').addEventListener('click',closeSheet);
 scrim.addEventListener('click',function(){if(!batchSheet.hidden)closeBatch();else closeSheet();});
-document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!batchSheet.hidden)closeBatch();else if(!sheet.hidden)closeSheet();});
+document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!document.getElementById('lightbox').hidden)closeLightbox();else if(!batchSheet.hidden)closeBatch();else if(!sheet.hidden)closeSheet();});
 
 /* photo pick + downscale */
 var drop=document.getElementById('drop'),photoInput=document.getElementById('photo');
@@ -603,7 +678,7 @@ async function handleFile(file){
   scanTicket(pendingPhoto);
 }
 photoInput.addEventListener('change',function(){var fs=Array.prototype.slice.call(photoInput.files);photoInput.value='';if(!fs.length)return;if(fs.length>1)openBatch(fs);else handleFile(fs[0]);});
-document.getElementById('clearPhoto').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();pendingPhoto=null;var i=drop.querySelector('img');if(i)i.remove();drop.classList.remove('has');photoInput.value='';dropStatus(false);});
+document.getElementById('clearPhoto').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();pendingPhoto=null;editingPhoto=null;var i=drop.querySelector('img');if(i)i.remove();drop.classList.remove('has');photoInput.value='';dropStatus(false);});
 
 /* ---------- read the ticket (on-device OCR) ---------- */
 var _tess;
@@ -768,29 +843,65 @@ document.getElementById('cancelBatch').addEventListener('click',closeBatch);
 document.getElementById('batchSave').addEventListener('click',saveBatch);
 document.getElementById('addManyBtn').addEventListener('click',function(){closeMenu();document.getElementById('bulkInput').click();});
 document.getElementById('bulkInput').addEventListener('change',function(){var fs=Array.prototype.slice.call(this.files);this.value='';if(fs.length)openBatch(fs);});
+var searchEl=document.getElementById('search');
+searchEl.addEventListener('input',function(){searchQuery=this.value.trim().toLowerCase();document.getElementById('searchClear').hidden=!this.value;render();reveal(document.querySelector('.view:not([hidden])'));});
+document.getElementById('searchClear').addEventListener('click',function(){searchEl.value='';searchQuery='';this.hidden=true;render();reveal(document.querySelector('.view:not([hidden])'));searchEl.focus();});
 
 form.addEventListener('submit',async function(e){
   e.preventDefault();
   var v=function(id){return document.getElementById(id).value.trim();};
   var title=v('f-title');if(!title){toast('Give it a title');return;}
   var cat=v('f-cat'),date=v('f-date');if(!date){toast('Pick a date');return;}
-  var t={id:uid(),cat:cat,kind:KIND[cat]||cat.toUpperCase(),title:title,sub:v('f-sub'),venue:v('f-venue'),date:date,time:v('f-time'),
-    format:v('f-format'),screen:v('f-screen'),seats:v('f-seats'),bookingId:v('f-booking'),price:v('f-price'),count:v('f-count'),provider:v('f-provider'),
-    note:v('f-note'),createdAt:Date.now()};
-  t.serial=serialFor(t);
-  if(pendingPhoto)t.photo=pendingPhoto;
-  try{await put(t);TICKETS.push(t);
+  var fields={cat:cat,kind:KIND[cat]||cat.toUpperCase(),title:title,sub:v('f-sub'),venue:v('f-venue'),date:date,time:v('f-time'),
+    format:v('f-format'),screen:v('f-screen'),seats:v('f-seats'),bookingId:v('f-booking'),price:v('f-price'),count:v('f-count'),provider:v('f-provider'),note:v('f-note')};
+  var isEdit=!!editingId, t;
+  if(isEdit){
+    var existing=TICKETS.find(function(x){return x.id===editingId;})||{};
+    t=Object.assign({},existing,fields);
+    t.photo=pendingPhoto||editingPhoto||undefined;if(!t.photo)delete t.photo;
+    t.serial=existing.serial||serialFor(t);
+  }else{
+    t=Object.assign({id:uid(),createdAt:Date.now()},fields);t.serial=serialFor(t);
+    if(pendingPhoto)t.photo=pendingPhoto;
+  }
+  try{await put(t);
+    if(isEdit){var ix=TICKETS.findIndex(function(x){return x.id===t.id;});if(ix>=0)TICKETS[ix]=t;else TICKETS.push(t);}
+    else TICKETS.push(t);
     var tab=document.querySelector('.tab[data-view="'+(isUpcoming(t)?'upcoming':'collected')+'"]');if(tab&&!tab.classList.contains('is-on'))tab.click();
     render();reveal(document.querySelector('.view:not([hidden])'));
-    _lockY=0;closeSheet();toast('Kept on your shelf');
+    _lockY=0;closeSheet();toast(isEdit?'Saved changes':'Kept on your shelf');
   }catch(err){toast('Could not save');console.error(err);}
 });
 
 /* ---------- delete ---------- */
 async function removeTicket(id){
-  var t=TICKETS.find(function(x){return x.id===id;});
-  if(!confirm('Remove "'+(t?t.title:'this ticket')+'" from your shelf?'))return;
-  try{await del(id);TICKETS=TICKETS.filter(function(x){return x.id!==id;});render();reveal(document.querySelector('.view:not([hidden])'));toast('Removed');}catch(e){toast('Could not remove');}
+  var t=TICKETS.find(function(x){return x.id===id;});if(!t)return;
+  try{await del(id);}catch(e){}
+  TICKETS=TICKETS.filter(function(x){return x.id!==id;});
+  render();reveal(document.querySelector('.view:not([hidden])'));
+  toastUndo('Removed “'+(t.title||'ticket')+'”',function(){
+    put(t).then(function(){TICKETS.push(t);render();reveal(document.querySelector('.view:not([hidden])'));toast('Restored');}).catch(function(){});
+  });
+}
+function pad2(n){return (n<10?'0':'')+n;}
+function parseClock(s){if(!s)return null;var m=String(s).match(/(\d{1,2}):(\d{2})\s*([AP])\.?M/i);if(!m)return null;var h=(+m[1])%12;if(/P/i.test(m[3]))h+=12;return{h:h,m:+m[2]};}
+function icsEsc(s){return String(s).replace(/([\\;,])/g,'\\$1').replace(/\n/g,'\\n');}
+function addToCalendar(id){
+  var t=TICKETS.find(function(x){return x.id===id;});if(!t||!t.date)return;
+  var d=t.date.replace(/-/g,''),clk=parseClock(t.time);
+  var now=new Date();var stamp=now.getUTCFullYear()+pad2(now.getUTCMonth()+1)+pad2(now.getUTCDate())+'T'+pad2(now.getUTCHours())+pad2(now.getUTCMinutes())+pad2(now.getUTCSeconds())+'Z';
+  var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Remember//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT','UID:'+t.id+'@remember','DTSTAMP:'+stamp];
+  if(clk){var s=clk.h*60+clk.m,e=Math.min(s+180,23*60+59);L.push('DTSTART:'+d+'T'+pad2(clk.h)+pad2(clk.m)+'00');L.push('DTEND:'+d+'T'+pad2(Math.floor(e/60))+pad2(e%60)+'00');}
+  else{L.push('DTSTART;VALUE=DATE:'+d);L.push('DTEND;VALUE=DATE:'+d);}
+  L.push('SUMMARY:'+icsEsc(t.title||'Event'));
+  if(t.venue)L.push('LOCATION:'+icsEsc(t.venue));
+  var desc=[t.sub,t.seats?('Seats '+t.seats):'',t.bookingId?('Booking '+t.bookingId):''].filter(Boolean).join(' · ');
+  if(desc)L.push('DESCRIPTION:'+icsEsc(desc));
+  L.push('END:VEVENT','END:VCALENDAR');
+  var blob=new Blob([L.join('\r\n')],{type:'text/calendar'});var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=((t.title||'event').replace(/[^a-z0-9]+/gi,'-').toLowerCase().replace(/^-|-$/g,'')||'event')+'.ics';a.click();
+  setTimeout(function(){URL.revokeObjectURL(url);},800);
+  toast('Calendar file downloaded');
 }
 
 /* ---------- remove samples ---------- */
