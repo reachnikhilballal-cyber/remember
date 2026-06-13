@@ -17,7 +17,9 @@ ticket, and the memory.
 
 </div>
 
-<br/>
+<div align="center">
+<img src="screenshots/demo.gif" alt="Remember in motion: browse the shelf, tap a stub open, add a ticket, bulk import, and share a card" width="300" />
+</div>
 
 <img src="screenshots/shelf.png" alt="The Remember shelf" width="100%" />
 
@@ -50,6 +52,8 @@ ahead. The whole thing runs in your browser; nothing leaves your device.
 - **Find & tend your shelf.** Search by title / venue / artist, **edit** any stub (with an
   *Undo* if you remove one), **tap the photo** to see the full ticket, and **add upcoming
   events to your calendar** (`.ics`). A running line keeps count of what you've kept.
+- **Share a stub as a card.** Turn any ticket into a clean image (drawn on-device) and send
+  it to the share sheet, or save the PNG. Every card carries the link back.
 
 <table>
 <tr>
@@ -61,6 +65,11 @@ ahead. The whole thing runs in your browser; nothing leaves your device.
 <td align="center"><em>Add many: read, classified, and filed in one go.</em></td>
 </tr>
 </table>
+
+<div align="center">
+<img src="screenshots/share-card.png" alt="A shareable Remember card" width="300" />
+<br/><sub><em>Share any stub as an image card.</em></sub>
+</div>
 
 ## ✦ How it works
 
