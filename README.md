@@ -18,6 +18,11 @@ entirely in the browser:
 - **Add a ticket** with the `+` button: drop a **photo or screenshot of the real ticket**,
   or type the details (title, shelf, date, venue, seats, booking ID, the memory). It's
   filed automatically — past events go to **Collected**, future ones to **Upcoming**.
+- **Auto-fill from the screenshot:** drop a BookMyShow/PVR-style ticket and it's read
+  **on-device** (Tesseract.js OCR, in the browser — the image never leaves your phone) to
+  pre-fill the title, date, time, venue, screen, seats, booking ID and amount for you to
+  confirm. Reading the assets needs a connection the first time; everything else works
+  offline.
 - **Tap a stub** to light it up. If you added a photo, you see *that* photo; if you typed
   the details, you get a faithful recreation of the M-ticket (QR for upcoming, an
   "Attended" stamp for past).
