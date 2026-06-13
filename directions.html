@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Remember - three directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono&display=swap"/>
+<style>
+:root{--bg:#15120d;--ink:#f2e9d6;--ink-2:rgba(242,233,214,.6);--ink-3:rgba(242,233,214,.4);--line:rgba(242,233,214,.12);--glow:#eaa54a;--ease:cubic-bezier(.16,1,.3,1);}
+*{box-sizing:border-box;margin:0;}body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',sans-serif;min-height:100dvh;display:grid;place-items:center;padding:56px 24px;-webkit-font-smoothing:antialiased;}
+.lab{width:100%;max-width:760px;}.k{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);}
+.back{display:inline-flex;align-items:center;gap:7px;font-family:'Space Mono',monospace;font-size:12px;color:var(--ink-2);text-decoration:none;margin-bottom:22px;}
+.back:hover{color:var(--glow);}
+h1{font-size:clamp(36px,7vw,60px);font-weight:700;letter-spacing:-.03em;line-height:.95;margin:14px 0 0;}h1 .d{color:var(--glow);}
+.lead{color:var(--ink-2);margin-top:14px;max-width:56ch;line-height:1.6;}
+.opts{display:grid;gap:13px;margin-top:34px;}
+.o{display:grid;grid-template-columns:30px 1fr auto;gap:18px;align-items:center;padding:22px 24px;border:1px solid var(--line);border-radius:16px;text-decoration:none;color:inherit;background:rgba(255,255,255,.02);transition:border-color .25s var(--ease),background .25s var(--ease),transform .25s var(--ease);}
+.o:hover{border-color:var(--glow);background:rgba(234,165,74,.06);transform:translateY(-2px);}
+.o .l{font-family:'Space Mono',monospace;font-size:22px;color:var(--glow);}.o .nm{display:block;font-weight:600;font-size:17px;}.o .ds{display:block;color:var(--ink-2);font-size:13.5px;margin-top:4px;line-height:1.5;}
+.o .go{font-family:'Space Mono',monospace;font-size:13px;color:var(--ink-3);}.o:hover .go{color:var(--glow);}
+@media(max-width:560px){.o{grid-template-columns:24px 1fr;}.o .go{display:none;}}
+.foot{margin-top:30px;font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-3);letter-spacing:.06em;}
+</style></head><body>
+<main class="lab">
+  <a class="back" href="index.html">&larr; back to the app</a>
+  <div class="k">Remember &middot; design directions</div>
+  <h1>Three ways to keep a stub<span class="d">.</span></h1>
+  <p class="lead">The static design explorations behind the app. A one-page shelf for the ticket stubs you held on to, filed by kind, with an Upcoming tab. Tap a stub to light it up and pull out the original ticket. Same memories in each, three feelings.</p>
+  <nav class="opts">
+    <a class="o" href="variant-a-shelf.html"><span class="l">A</span><span><span class="nm">The Vintage Shelf, light</span><span class="ds">Warm paper, torn stubs on a tilt, a soft amber glow. The drawer you kept them in.</span></span><span class="go">open -&gt;</span></a>
+    <a class="o" href="variant-b-shelf-dark.html"><span class="l">B</span><span><span class="nm">The Vintage Shelf, dark</span><span class="ds">The same shelf after dark. Same stubs, same glow, on warm near-black.</span></span><span class="go">open -&gt;</span></a>
+    <a class="o" href="variant-c-editorial.html"><span class="l">C</span><span><span class="nm">The Editorial Wall</span><span class="ds">Oversized type, a filed grid, electric accent. The stubs as a printed index.</span></span><span class="go">open -&gt;</span></a>
+  </nav>
+  <p class="foot">Built with Space Grotesk &middot; the live app is at <a href="index.html" style="color:var(--ink-2)">index</a></p>
+</main></body></html>

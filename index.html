@@ -1,30 +1,660 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Remember - three directions</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono&display=swap"/>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Remember — keep your ticket stubs</title>
+<meta name="description" content="A nostalgic shelf for the ticket stubs you kept. Add a photo, screenshot or the details of a ticket, and tap a stub to light it up and remember the night." />
+<meta name="theme-color" content="#15120d" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Remember" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" />
 <style>
-:root{--bg:#15120d;--ink:#f2e9d6;--ink-2:rgba(242,233,214,.6);--ink-3:rgba(242,233,214,.4);--line:rgba(242,233,214,.12);--glow:#eaa54a;--ease:cubic-bezier(.16,1,.3,1);}
-*{box-sizing:border-box;margin:0;}body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',sans-serif;min-height:100dvh;display:grid;place-items:center;padding:56px 24px;-webkit-font-smoothing:antialiased;}
-.lab{width:100%;max-width:760px;}.k{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);}
-h1{font-size:clamp(36px,7vw,60px);font-weight:700;letter-spacing:-.03em;line-height:.95;margin:14px 0 0;}h1 .d{color:var(--glow);}
-.lead{color:var(--ink-2);margin-top:14px;max-width:56ch;line-height:1.6;}
-.opts{display:grid;gap:13px;margin-top:34px;}
-.o{display:grid;grid-template-columns:30px 1fr auto;gap:18px;align-items:center;padding:22px 24px;border:1px solid var(--line);border-radius:16px;text-decoration:none;color:inherit;background:rgba(255,255,255,.02);transition:border-color .25s var(--ease),background .25s var(--ease),transform .25s var(--ease);}
-.o:hover{border-color:var(--glow);background:rgba(234,165,74,.06);transform:translateY(-2px);}
-.o .l{font-family:'Space Mono',monospace;font-size:22px;color:var(--glow);}.o .nm{display:block;font-weight:600;font-size:17px;}.o .ds{display:block;color:var(--ink-2);font-size:13.5px;margin-top:4px;line-height:1.5;}
-.o .go{font-family:'Space Mono',monospace;font-size:13px;color:var(--ink-3);}.o:hover .go{color:var(--glow);}
-@media(max-width:560px){.o{grid-template-columns:24px 1fr;}.o .go{display:none;}}
-.foot{margin-top:30px;font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-3);letter-spacing:.06em;}
-</style></head><body>
-<main class="lab">
-  <div class="k">Remember &middot; design directions</div>
-  <h1>Three ways to keep a stub<span class="d">.</span></h1>
-  <p class="lead">A one-page shelf for the ticket stubs you held on to, filed by kind, with an Upcoming tab for what's next. Tap a stub to light it up and pull out the original ticket. Same memories in each, three feelings.</p>
-  <nav class="opts">
-    <a class="o" href="variant-a-shelf.html"><span class="l">A</span><span><span class="nm">The Vintage Shelf, light</span><span class="ds">Warm paper, torn stubs on a tilt, a soft amber glow. The drawer you kept them in.</span></span><span class="go">open -&gt;</span></a>
-    <a class="o" href="variant-b-shelf-dark.html"><span class="l">B</span><span><span class="nm">The Vintage Shelf, dark</span><span class="ds">The same shelf after dark. Same stubs, same glow, on warm near-black.</span></span><span class="go">open -&gt;</span></a>
-    <a class="o" href="variant-c-editorial.html"><span class="l">C</span><span><span class="nm">The Editorial Wall</span><span class="ds">Oversized type, a filed grid, electric accent. The stubs as a printed index.</span></span><span class="go">open -&gt;</span></a>
-  </nav>
-  <p class="foot">Built with Space Grotesk &middot; tap a stub to open the ticket</p>
-</main></body></html>
+/* ---------- theme ---------- */
+:root{
+  --paper:#15120d; --paper-2:#1b1711; --card:#221d15; --ink:#f2e9d6; --ink-2:rgba(242,233,214,.62);
+  --ink-3:rgba(242,233,214,.40); --line:rgba(242,233,214,.16); --line-2:rgba(242,233,214,.09);
+  --glow:#eaa54a; --glow-soft:rgba(234,165,74,.34); --stamp:#e3604f; --bar:#f2e9d6;
+  --bar-bg:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.06));
+  --field:#1a1610; --field-line:rgba(242,233,214,.18);
+  --mtk-bg:#100d09; --mtk-card:#181410; --mtk-ink:#f3ead8; --mtk-ink-2:rgba(243,234,216,.6);
+  --mtk-ink-3:rgba(243,234,216,.4); --mtk-line:rgba(255,255,255,.1); --notch:#15120d;
+  --bar-blur:rgba(21,18,13,.72); --shadow:0 18px 40px -22px rgba(0,0,0,.6);
+}
+:root[data-theme="light"]{
+  --paper:#efe7d6; --paper-2:#e7dcc6; --card:#f7f1e3; --ink:#211c15; --ink-2:rgba(33,28,21,.62);
+  --ink-3:rgba(33,28,21,.40); --line:rgba(33,28,21,.16); --line-2:rgba(33,28,21,.10);
+  --glow:#cf7a2c; --glow-soft:rgba(207,122,44,.30); --stamp:#b23a2e; --bar:#211c15;
+  --bar-bg:linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.07));
+  --field:#fbf6ea; --field-line:rgba(33,28,21,.20);
+  --notch:#efe7d6; --bar-blur:rgba(239,231,214,.72); --shadow:0 16px 34px -20px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;min-height:100dvh;
+  background-image:radial-gradient(circle at 16% 6%,rgba(234,165,74,.07),transparent 42%),radial-gradient(circle at 88% 92%,rgba(150,120,70,.08),transparent 48%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
+  transition:background-color .4s,color .4s;}
+.mono{font-family:'Space Mono',ui-monospace,monospace;}
+.skip{position:absolute;left:-999px;}.skip:focus{left:16px;top:70px;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;z-index:99;}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
+
+/* ---------- app bar ---------- */
+.appbar{position:sticky;top:0;z-index:30;backdrop-filter:saturate(140%) blur(12px);background:var(--bar-blur);border-bottom:1px solid var(--line-2);}
+.appbar .in{max-width:1040px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:14px;}
+.brand{display:inline-flex;align-items:center;gap:9px;font-size:21px;font-weight:700;letter-spacing:-.03em;}
+.brand .mark{width:30px;height:30px;flex-shrink:0;}
+.brand .dot{color:var(--stamp);}
+.spacer{flex:1;}
+.ib{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;transition:border-color .2s,background .2s,transform .12s;}
+.ib:hover{border-color:var(--glow);}
+.ib:active{transform:scale(.94);}
+.ib svg{width:18px;height:18px;}
+.add{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 16px 0 13px;border-radius:999px;border:0;background:var(--glow);color:#15120d;font:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:transform .12s,filter .2s;}
+.add:hover{filter:brightness(1.06);}.add:active{transform:scale(.97);}
+.add svg{width:16px;height:16px;}
+.menuwrap{position:relative;}
+.pop{position:absolute;right:0;top:46px;min-width:208px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:6px;z-index:40;}
+.pop[hidden]{display:none;}
+.pop button,.pop a{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;border-radius:9px;cursor:pointer;text-decoration:none;}
+.pop button:hover,.pop a:hover{background:var(--paper-2);}
+.pop .sep{height:1px;background:var(--line-2);margin:5px 6px;}
+.pop svg{width:16px;height:16px;opacity:.7;flex-shrink:0;}
+.pop .danger{color:var(--stamp);}
+
+/* ---------- masthead + tabs ---------- */
+.hero{padding:32px 0 6px;text-align:center;}
+.hero .eye{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--stamp);}
+.hero h1{font-size:clamp(42px,9vw,76px);font-weight:700;letter-spacing:-.04em;line-height:.92;margin-top:8px;}
+.hero h1 .dot{color:var(--stamp);}
+.hero p{margin-top:13px;font-size:clamp(14px,1.6vw,16.5px);color:var(--ink-2);max-width:44ch;margin-inline:auto;}
+.tabs{display:inline-flex;gap:6px;margin-top:22px;padding:5px;border:1px solid var(--line-2);border-radius:999px;background:color-mix(in srgb,var(--card) 70%,transparent);}
+.tab{font:inherit;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);background:none;border:0;cursor:pointer;padding:9px 18px;border-radius:999px;transition:background .25s,color .25s;}
+.tab.is-on{background:var(--ink);color:var(--paper);}
+.tab .n{opacity:.7;margin-left:5px;}
+.rule{height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 8px,transparent 8px 16px);margin:24px 0 0;}
+
+/* ---------- samples banner ---------- */
+.banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:24px 0 0;padding:13px 16px;border:1px dashed var(--line);border-radius:14px;background:color-mix(in srgb,var(--glow) 7%,transparent);}
+.banner[hidden]{display:none;}
+.banner p{font-size:13.5px;color:var(--ink-2);flex:1;min-width:200px;}
+.banner b{color:var(--ink);font-weight:600;}
+.banner button{font:inherit;font-size:12.5px;font-family:'Space Mono',monospace;letter-spacing:.04em;color:var(--stamp);background:none;border:1px solid var(--line);border-radius:999px;padding:7px 13px;cursor:pointer;white-space:nowrap;}
+.banner button:hover{border-color:var(--stamp);}
+
+/* ---------- shelf ---------- */
+.cat{padding:34px 0 6px;}
+.cat-h{display:flex;align-items:baseline;gap:14px;margin-bottom:22px;}
+.cat-h .nx{font-family:'Space Mono',monospace;font-size:12px;color:var(--stamp);letter-spacing:.1em;}
+.cat-h h2{font-size:24px;font-weight:600;letter-spacing:-.01em;}
+.cat-h .c{font-family:'Space Mono',monospace;font-size:12px;color:var(--ink-3);margin-left:auto;}
+.shelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 26px;align-items:start;}
+@media(max-width:720px){.shelf{grid-template-columns:minmax(0,1fr);}}
+.view[hidden]{display:none;}
+
+.tk{position:relative;display:block;width:100%;min-width:0;text-align:left;cursor:pointer;font:inherit;color:inherit;background:transparent;border:0;padding:0;
+  opacity:0;transform:translateY(15px) rotate(var(--tilt,0deg));transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1);-webkit-tap-highlight-color:transparent;}
+.tk.seen{opacity:1;transform:translateY(0) rotate(var(--tilt,0deg));}
+.tk:nth-child(odd){--tilt:-1deg;}.tk:nth-child(even){--tilt:.9deg;}
+.tk-top{position:relative;display:flex;background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--line-2);box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 14px 30px -18px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.12);transition:box-shadow .45s,border-color .45s;}
+.tk:hover{transform:translateY(-2px) rotate(0deg);}
+.tk:focus-visible{outline:0;}.tk:focus-visible .tk-top{outline:2px solid var(--glow);outline-offset:3px;}
+.tk.is-open{transform:translateY(0) rotate(0deg);z-index:3;}
+.tk.is-open .tk-top{box-shadow:0 0 0 1px var(--glow-soft),0 0 36px var(--glow-soft),0 22px 40px -20px rgba(0,0,0,.5);border-color:var(--glow);}
+.tk-body{flex:1;min-width:0;padding:19px 20px;}
+.tk-cat-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.tk-cat{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.2em;color:var(--stamp);text-transform:uppercase;}
+.tk-flag{flex-shrink:0;font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--glow);padding:3px 9px;border-radius:999px;white-space:nowrap;}
+.tk-title{font-size:21px;font-weight:700;letter-spacing:-.02em;margin-top:8px;line-height:1.06;word-break:break-word;}
+.tk-sub{font-size:13px;color:var(--ink-2);margin-top:3px;}
+.tk-venue{font-size:12.5px;color:var(--ink-3);margin-top:13px;line-height:1.4;}
+.tk-date{font-family:'Space Mono',monospace;font-size:12px;color:var(--ink);margin-top:6px;letter-spacing:.02em;}
+.tk-perf{position:relative;width:0;border-left:2px dashed var(--line);}
+.tk-perf::before,.tk-perf::after{content:"";position:absolute;left:-9px;width:18px;height:18px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line-2);}
+.tk-perf::before{top:-9px;}.tk-perf::after{bottom:-9px;}
+.tk-stub{width:108px;flex-shrink:0;padding:16px 12px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:var(--bar-bg);text-align:center;}
+.tk-admit{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.2em;color:var(--ink-3);writing-mode:vertical-rl;transform:rotate(180deg);}
+.tk-barcode{flex:1;width:36px;margin:8px 0;background:repeating-linear-gradient(90deg,var(--bar) 0 2px,transparent 2px 3px,var(--bar) 3px 4px,transparent 4px 7px);opacity:.65;border-radius:1px;}
+.tk-serial{font-family:'Space Mono',monospace;font-size:9px;color:var(--ink-2);letter-spacing:.04em;word-break:break-all;}
+
+/* expand */
+.tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.16,1,.3,1);}
+.tk.is-open .tk-note{grid-template-rows:1fr;margin-top:13px;}
+.tk-note>div{overflow:hidden;}
+.tk-photo{display:block;width:100%;border-radius:13px;border:1px solid var(--mtk-line);background:var(--mtk-bg);}
+.tk-photo img{display:block;width:100%;height:auto;border-radius:13px;}
+.tk-extra{margin-top:12px;background:var(--mtk-bg);color:var(--mtk-ink);border-radius:13px;padding:14px 16px;border:1px solid var(--mtk-line);}
+.tk-memory-k{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--glow);}
+.tk-extra p{font-size:13.5px;line-height:1.55;color:var(--mtk-ink);margin-top:5px;}
+.tk-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:0;}
+.chip{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.03em;color:var(--mtk-ink-2);border:1px solid var(--mtk-line);border-radius:999px;padding:4px 10px;}
+.chip b{color:var(--glow);font-weight:400;}
+.tk-actions{display:flex;gap:8px;margin-top:13px;justify-content:flex-end;}
+.tk-del{font:inherit;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.04em;color:var(--ink-3);background:none;border:1px solid var(--line);border-radius:999px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.tk-del:hover{color:var(--stamp);border-color:var(--stamp);}
+.tk-del svg{width:13px;height:13px;}
+
+/* recreated M-ticket (no-photo) */
+.mtk{background:var(--mtk-bg);color:var(--mtk-ink);border-radius:14px;overflow:hidden;border:1px solid var(--mtk-line);box-shadow:var(--shadow);}
+.mtk-head{display:flex;gap:15px;padding:17px 17px 13px;}
+.mtk-poster{width:70px;height:92px;flex-shrink:0;border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:8px 7px;}
+.mtk-poster-t{font-weight:700;font-size:11px;line-height:1.05;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);letter-spacing:-.01em;}
+.mtk-trailer{position:absolute;left:0;right:0;bottom:0;background:#e23744;color:#fff;font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.06em;text-align:center;padding:2px 0;text-transform:uppercase;}
+.mtk-hi{flex:1;min-width:0;}
+.mtk-title{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.1;word-break:break-word;}
+.mtk-title .cert{color:var(--mtk-ink-3);font-weight:500;font-size:13px;}
+.mtk-fmt,.mtk-when{font-size:12px;color:var(--mtk-ink-2);margin-top:4px;}
+.mtk-venue{font-size:11.5px;color:var(--mtk-ink-3);margin-top:3px;}
+.mtk-ml{writing-mode:vertical-rl;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--mtk-ink-3);}
+.mtk-mid{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 16px;padding:13px 17px;border-top:1px dashed var(--mtk-line);border-bottom:1px dashed var(--mtk-line);position:relative;}
+.mtk-mid::before,.mtk-mid::after{content:"";position:absolute;top:-9px;width:18px;height:18px;border-radius:50%;background:var(--mtk-bg);}
+.mtk-mid::before{left:-9px;}.mtk-mid::after{right:-9px;}
+.mtk-facts{min-width:0;}
+.mtk-count{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mtk-ink-3);}
+.mtk-screen{font-size:20px;font-weight:700;letter-spacing:-.01em;margin-top:4px;}
+.mtk-seats{font-family:'Space Mono',monospace;font-size:12px;color:var(--glow);margin-top:2px;}
+.mtk-bk{font-family:'Space Mono',monospace;font-size:10px;color:var(--mtk-ink-3);margin-top:9px;letter-spacing:.04em;}
+.mtk-art{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:7px;}
+.mtk-qr{width:72px;height:72px;background:#fff;border-radius:8px;padding:7px;}
+.mtk-qr svg{width:100%;height:100%;fill:#0a0a0a;shape-rendering:crispEdges;}
+.mtk-live{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.05em;color:var(--glow);display:flex;align-items:center;gap:5px;text-transform:uppercase;}
+.mtk-dot{width:6px;height:6px;border-radius:50%;background:var(--glow);box-shadow:0 0 8px var(--glow);animation:pulse 1.8s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.mtk-stamp{width:92px;height:72px;border:2px solid var(--stamp);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-7deg);color:var(--stamp);}
+.mtk-stamp span{font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;}
+.mtk-stamp b{font-family:'Space Mono',monospace;font-size:8.5px;font-weight:400;letter-spacing:.04em;margin-top:2px;opacity:.85;}
+.mtk-foot{display:flex;align-items:baseline;gap:10px;padding:12px 17px;}
+.mtk-foot>span:first-child{font-size:12px;color:var(--mtk-ink-2);}
+.mtk-price{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--mtk-ink);}
+.mtk-via{margin-left:auto;font-family:'Space Mono',monospace;font-size:9.5px;color:var(--mtk-ink-3);letter-spacing:.04em;}
+.mtk-memory{padding:13px 17px 15px;border-top:1px solid var(--mtk-line);}
+.mtk-memory p{font-size:13.5px;line-height:1.55;color:var(--mtk-ink);margin-top:5px;}
+@media(prefers-reduced-motion:reduce){.tk,.tk.seen{transition:none;}.mtk-dot{animation:none;}body{transition:none;}}
+@media(max-width:760px){.mtk-mid{flex-direction:column;align-items:stretch;}.mtk-art{align-items:flex-start;}}
+
+/* empty state */
+.empty{padding:46px 0 30px;text-align:center;}
+.empty .ico{width:60px;height:60px;margin:0 auto 18px;}
+.empty h3{font-size:22px;font-weight:600;letter-spacing:-.01em;}
+.empty p{color:var(--ink-2);margin-top:8px;max-width:36ch;margin-inline:auto;font-size:14.5px;}
+.empty .add{margin-top:20px;}
+.empty[hidden]{display:none;}
+
+footer{padding:48px 0 120px;text-align:center;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--ink-3);}
+footer a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line);}
+footer a:hover{color:var(--glow);}
+
+/* ---------- add sheet ---------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);z-index:50;opacity:0;transition:opacity .25s;}
+.scrim.show{opacity:1;}
+.scrim[hidden]{display:none;}
+.sheet{position:fixed;z-index:51;left:50%;top:50%;transform:translate(-50%,-46%);width:min(560px,calc(100vw - 28px));max-height:90dvh;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:0 40px 90px -30px rgba(0,0,0,.7);opacity:0;transition:opacity .25s,transform .25s;}
+.sheet.show{opacity:1;transform:translate(-50%,-50%);}
+.sheet[hidden]{display:none;}
+@media(max-width:560px){.sheet{top:auto;bottom:0;transform:translate(-50%,12px);width:100vw;max-height:92dvh;border-radius:20px 20px 0 0;}.sheet.show{transform:translate(-50%,0);}}
+.sheet-h{position:sticky;top:0;display:flex;align-items:center;gap:12px;padding:18px 20px 14px;background:var(--paper);border-bottom:1px solid var(--line-2);z-index:2;}
+.sheet-h h2{font-size:19px;font-weight:700;letter-spacing:-.02em;flex:1;}
+.sheet-b{padding:18px 20px 22px;}
+.drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:140px;border:1.5px dashed var(--field-line);border-radius:14px;background:var(--field);cursor:pointer;text-align:center;padding:18px;overflow:hidden;transition:border-color .2s;}
+.drop:hover,.drop.over{border-color:var(--glow);}
+.drop svg{width:26px;height:26px;color:var(--ink-3);}
+.drop .t{font-size:14px;font-weight:500;}
+.drop .s{font-size:12px;color:var(--ink-3);}
+.drop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.drop .clear{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:0;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.drop.has .clear{display:flex;}
+.drop.has .ph{display:none;}
+.field{margin-top:14px;}
+.field label{display:block;font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px;}
+.field label .req{color:var(--stamp);}
+.field input,.field select,.field textarea{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:11px;padding:11px 13px;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--glow);}
+.field textarea{resize:vertical;min-height:62px;line-height:1.5;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:460px){.grid2{grid-template-columns:1fr;}}
+details.more{margin-top:16px;border-top:1px solid var(--line-2);padding-top:6px;}
+details.more>summary{list-style:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--glow);padding:10px 0;display:flex;align-items:center;gap:7px;}
+details.more>summary::-webkit-details-marker{display:none;}
+details.more>summary .chev{transition:transform .2s;}
+details.more[open]>summary .chev{transform:rotate(90deg);}
+.sheet-f{position:sticky;bottom:0;display:flex;gap:10px;padding:14px 20px 18px;background:var(--paper);border-top:1px solid var(--line-2);}
+.btn-ghost{flex:0 0 auto;font:inherit;font-size:14px;color:var(--ink-2);background:none;border:1px solid var(--line);border-radius:999px;padding:11px 18px;cursor:pointer;}
+.btn-ghost:hover{border-color:var(--ink-3);}
+.btn-primary{flex:1;font:inherit;font-size:15px;font-weight:600;color:#15120d;background:var(--glow);border:0;border-radius:999px;padding:12px 18px;cursor:pointer;transition:filter .2s,transform .12s;}
+.btn-primary:hover{filter:brightness(1.06);}.btn-primary:active{transform:scale(.99);}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:var(--paper);font-size:13.5px;padding:11px 18px;border-radius:999px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;box-shadow:0 14px 30px -12px rgba(0,0,0,.5);}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to your shelf</a>
+
+<header class="appbar"><div class="in">
+  <div class="brand"><svg class="mark" viewBox="0 0 120 120" aria-hidden="true" id="brandMark"></svg>Remember<span class="dot">.</span></div>
+  <div class="spacer"></div>
+  <button class="ib" id="themeBtn" aria-label="Toggle light or dark" title="Light / dark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" id="themeIcon"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+  </button>
+  <button class="add" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+  <div class="menuwrap">
+    <button class="ib" id="menuBtn" aria-label="More" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
+    <div class="pop" id="menuPop" hidden role="menu">
+      <button id="exportBtn" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>Export backup (.json)</button>
+      <button id="importBtn" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21V9m0 0 4 4m-4-4-4 4M5 3h14"/></svg>Import backup</button>
+      <div class="sep"></div>
+      <a href="directions.html" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>Design directions</a>
+      <div class="sep"></div>
+      <button id="clearSamplesBtn" class="danger" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg>Remove sample tickets</button>
+    </div>
+  </div>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <div class="eye">A shelf for the ones you kept</div>
+  <h1>Remember<span class="dot">.</span></h1>
+  <p>The ticket stubs we used to keep in a drawer. Add one, then tap it to light it up and pull out the original ticket, and the memory.</p>
+  <div class="tabs" role="tablist" aria-label="Which tickets">
+    <button class="tab is-on" role="tab" aria-selected="true" data-view="collected">Collected</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="upcoming">Upcoming <span class="n" id="upN">0</span></button>
+  </div>
+  <div class="banner" id="banner" hidden>
+    <p><b>These are sample tickets</b> to show you around. Add your own with the + button, then clear these whenever you like.</p>
+    <button id="clearSamplesBtn2">Remove samples</button>
+  </div>
+  <div class="rule"></div>
+</div></section>
+
+<main id="main"><div class="wrap">
+  <div class="view" data-view="collected" id="collected"></div>
+  <div class="view" data-view="upcoming" id="upcoming" hidden></div>
+  <div class="empty" id="empty" hidden>
+    <svg class="ico" viewBox="0 0 120 120" id="emptyMark" aria-hidden="true"></svg>
+    <h3 id="emptyH">No stubs here yet</h3>
+    <p id="emptyP">Add a ticket and it lands on the right shelf.</p>
+    <button class="add" id="emptyAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Add your first ticket</button>
+  </div>
+</div></main>
+
+<footer><div class="wrap">Remember &middot; your stubs live on this device &middot; <a href="directions.html">design directions</a></div></footer>
+
+<!-- add / edit sheet -->
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-h">
+    <h2 id="sheetTitle">Add a ticket</h2>
+    <button class="ib" id="closeSheet" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <form id="ticketForm" class="sheet-b">
+    <label class="drop" id="drop" for="photo">
+      <input type="file" id="photo" accept="image/*" hidden />
+      <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="8.5" cy="9.5" r="1.5"/></svg>
+      <div class="t">Add a photo or screenshot</div><div class="s">Of the real ticket — it shows when you tap the stub</div></div>
+      <button type="button" class="clear" id="clearPhoto" aria-label="Remove photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </label>
+
+    <div class="field"><label for="f-title">Title <span class="req">*</span></label><input id="f-title" required placeholder="Coldplay, Oppenheimer, RCB vs CSK…" /></div>
+    <div class="grid2">
+      <div class="field"><label for="f-cat">Shelf <span class="req">*</span></label><select id="f-cat"><option>Concerts</option><option>Movies</option><option>Events</option><option>One-off</option></select></div>
+      <div class="field"><label for="f-date">Date <span class="req">*</span></label><input id="f-date" type="date" required /></div>
+    </div>
+    <div class="field"><label for="f-sub">Subtitle</label><input id="f-sub" placeholder="Tour, director, teams…" /></div>
+    <div class="field"><label for="f-venue">Venue</label><input id="f-venue" placeholder="Narendra Modi Stadium, Ahmedabad" /></div>
+    <div class="field"><label for="f-note">The memory</label><textarea id="f-note" placeholder="One or two lines about the night…"></textarea></div>
+
+    <details class="more">
+      <summary><svg class="chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>More ticket details</summary>
+      <div class="grid2">
+        <div class="field"><label for="f-time">Time</label><input id="f-time" placeholder="7:30 PM" /></div>
+        <div class="field"><label for="f-format">Format</label><input id="f-format" placeholder="English, IMAX 70mm" /></div>
+        <div class="field"><label for="f-screen">Screen / section</label><input id="f-screen" placeholder="AUDI 4" /></div>
+        <div class="field"><label for="f-seats">Seats</label><input id="f-seats" placeholder="H9, H10, H11" /></div>
+        <div class="field"><label for="f-booking">Booking ID</label><input id="f-booking" placeholder="T4A7KZD" /></div>
+        <div class="field"><label for="f-price">Amount</label><input id="f-price" placeholder="₹1,710" /></div>
+        <div class="field"><label for="f-count">Tickets</label><input id="f-count" placeholder="2 Tickets" /></div>
+        <div class="field"><label for="f-provider">Booked via</label><input id="f-provider" placeholder="BookMyShow" /></div>
+      </div>
+    </details>
+  </form>
+  <div class="sheet-f">
+    <button type="button" class="btn-ghost" id="cancelBtn">Cancel</button>
+    <button type="submit" form="ticketForm" class="btn-primary" id="saveBtn">Keep this stub</button>
+  </div>
+</div>
+
+<input type="file" id="importer" accept="application/json,.json" hidden />
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+(function(){
+var ORDER = ["Concerts","Movies","Events","One-off"];
+var KIND = {Concerts:"CONCERT",Movies:"MOVIE",Events:"EVENT","One-off":"ONE-OFF"};
+
+/* brand mark: hand-sketched brain (pink line-art). The wordmark supplies the dot. */
+var BRAIN = '<g fill="none" stroke="#ec8fa6" stroke-linejoin="round" stroke-linecap="round">'
+ +'<path d="M55 18C46 12 33 13 28 22 C20 22 14 29 17 37 C10 41 9 51 16 56 C12 63 16 73 25 73 C28 81 38 84 45 79 C50 83 55 82 55 76 Z" stroke-width="3.4"/>'
+ +'<path d="M55 18C64 12 77 13 82 22 C90 22 96 29 93 37 C100 41 101 51 94 56 C98 63 94 73 85 73 C82 81 72 84 65 79 C60 83 55 82 55 76 Z" stroke-width="3.4"/>'
+ +'<path d="M55 17 C58 30 52 38 56 48 C60 58 52 66 55 78" stroke-width="2.8"/>'
+ +'<path d="M40 28 C46 30 47 36 43 39" stroke-width="2.6"/>'
+ +'<path d="M27 38 C34 38 37 43 34 48" stroke-width="2.6"/>'
+ +'<path d="M24 53 C31 52 35 56 33 61" stroke-width="2.6"/>'
+ +'<path d="M34 65 C40 64 44 68 42 72" stroke-width="2.6"/>'
+ +'<path d="M70 28 C64 30 63 36 67 39" stroke-width="2.6"/>'
+ +'<path d="M83 38 C76 38 73 43 76 48" stroke-width="2.6"/>'
+ +'<path d="M86 53 C79 52 75 56 77 61" stroke-width="2.6"/>'
+ +'<path d="M76 65 C70 64 66 68 68 72" stroke-width="2.6"/>'
+ +'</g>';
+document.getElementById('brandMark').innerHTML = BRAIN;
+var em=document.getElementById('emptyMark'); if(em){em.innerHTML=BRAIN+'<circle cx="103" cy="100" r="9" fill="#c0453a"/>';em.style.opacity='.55';}
+
+/* ---------- tiny IndexedDB wrapper ---------- */
+var DB=null;
+function openDB(){return new Promise(function(res,rej){
+  var r=indexedDB.open('remember',1);
+  r.onupgradeneeded=function(e){var db=e.target.result; if(!db.objectStoreNames.contains('tickets')) db.createObjectStore('tickets',{keyPath:'id'});};
+  r.onsuccess=function(){DB=r.result;res(DB);}; r.onerror=function(){rej(r.error);};
+});}
+function tx(mode){return DB.transaction('tickets',mode).objectStore('tickets');}
+function getAll(){return new Promise(function(res,rej){var r=tx('readonly').getAll();r.onsuccess=function(){res(r.result||[]);};r.onerror=function(){rej(r.error);};});}
+function put(t){return new Promise(function(res,rej){var r=tx('readwrite').put(t);r.onsuccess=function(){res();};r.onerror=function(){rej(r.error);};});}
+function del(id){return new Promise(function(res,rej){var r=tx('readwrite').delete(id);r.onsuccess=function(){res();};r.onerror=function(){rej(r.error);};});}
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function uid(){return 'tk_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function todayStart(){var d=new Date();d.setHours(0,0,0,0);return d;}
+function fmtDate(iso){if(!iso)return'';var d=new Date(iso+'T00:00:00');if(isNaN(d))return iso;return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function daysUntil(iso){if(!iso)return -9999;var d=new Date(iso+'T00:00:00');return Math.round((d-todayStart())/86400000);}
+function countdown(iso){var n=daysUntil(iso);if(n<0)return'';if(n===0)return'today';if(n===1)return'tomorrow';return'in '+n+' days';}
+function isUpcoming(t){return daysUntil(t.date)>=0;}
+function serialFor(t){var a=(t.title||'TK').replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,3)||'TKT';var b=(t.bookingId||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,4);var c=(t.date||'').replace(/-/g,'').slice(2,6);return a+'-'+(b||c||Math.random().toString(36).slice(2,6).toUpperCase());}
+
+/* deterministic QR-shaped pattern (decorative) */
+function qr(seed){
+  seed=String(seed||'RM');var n=13,s=2166136261;
+  for(var i=0;i<seed.length;i++){s^=seed.charCodeAt(i);s=(s*16777619)>>>0;}
+  function bit(){s^=s<<13;s^=s>>>17;s^=s<<5;s>>>=0;return s&1;}
+  function fnd(ox,oy){var r='';for(var y=0;y<3;y++)for(var x=0;x<3;x++){if(x===0||x===2||y===0||y===2||(x===1&&y===1))r+='<rect x="'+(ox+x)+'" y="'+(oy+y)+'" width="1" height="1"/>';}return r;}
+  var c='';for(var y=0;y<n;y++)for(var x=0;x<n;x++){if((x<3&&y<3)||(x>n-4&&y<3)||(x<3&&y>n-4))continue;if(bit())c+='<rect x="'+x+'" y="'+y+'" width="1" height="1"/>';}
+  return '<svg viewBox="0 0 '+n+' '+n+'" aria-hidden="true">'+c+fnd(0,0)+fnd(n-3,0)+fnd(0,n-3)+'</svg>';
+}
+function posterBg(cat){return {Movies:'linear-gradient(150deg,#1d2740,#0a0d15)',Concerts:'linear-gradient(150deg,#4d2059,#7c2d3a)',Events:'linear-gradient(150deg,#163a26,#0e2330)','One-off':'linear-gradient(150deg,#43330f,#1c1408)'}[cat]||'linear-gradient(150deg,#222,#111)';}
+
+function mticket(t){
+  var up=isUpcoming(t);
+  var art = up
+    ? '<div class="mtk-art"><div class="mtk-qr">'+qr(t.bookingId||t.id)+'</div><div class="mtk-live"><span class="mtk-dot"></span>Ticket live'+(countdown(t.date)?' &middot; '+countdown(t.date):'')+'</div></div>'
+    : '<div class="mtk-art"><div class="mtk-stamp"><span>Attended</span><b>'+esc(fmtDate(t.date))+'</b></div></div>';
+  var tag = t.cat==='Movies'?'Trailer':(t.kind||KIND[t.cat]||'');
+  return '<div class="mtk">'
+    + '<div class="mtk-head"><div class="mtk-poster" style="background:'+posterBg(t.cat)+'"><span class="mtk-poster-t">'+esc(t.title)+'</span><span class="mtk-trailer">'+esc(tag)+'</span></div>'
+    +   '<div class="mtk-hi"><div class="mtk-title">'+esc(t.title)+(t.cert?' <span class="cert">('+esc(t.cert)+')</span>':'')+'</div>'
+    +     (t.format?'<div class="mtk-fmt">'+esc(t.format)+'</div>':'')
+    +     '<div class="mtk-when">'+esc(fmtDate(t.date))+(t.time?' &middot; '+esc(t.time):'')+'</div>'
+    +     (t.venue?'<div class="mtk-venue">'+esc(t.venue)+'</div>':'')+'</div>'
+    +   '<div class="mtk-ml">M-Ticket</div></div>'
+    + '<div class="mtk-mid"><div class="mtk-facts">'+(t.count?'<div class="mtk-count">'+esc(t.count)+'</div>':'')
+    +   '<div class="mtk-screen">'+esc(t.screen||t.venue||t.title)+'</div>'
+    +   (t.seats?'<div class="mtk-seats">'+esc(t.seats)+'</div>':'')
+    +   (t.bookingId?'<div class="mtk-bk">Booking ID &middot; '+esc(t.bookingId)+'</div>':'')+'</div>'+art+'</div>'
+    + ((t.price||t.provider)?'<div class="mtk-foot"><span>'+(up?'Paid':'Total')+'</span><span class="mtk-price">'+esc(t.price||'')+'</span>'+(t.provider?'<span class="mtk-via">via '+esc(t.provider)+'</span>':'')+'</div>':'')
+    + (t.note?'<div class="mtk-memory"><span class="tk-memory-k">'+(up?'why I booked it':'the memory')+'</span><p>'+esc(t.note)+'</p></div>':'')
+    + '</div>';
+}
+
+var _urls=[];
+function photoURL(blob){var u=URL.createObjectURL(blob);_urls.push(u);return u;}
+function expandInner(t){
+  if(t.photo){
+    var chips='';
+    if(t.seats)chips+='<span class="chip"><b>Seats</b> '+esc(t.seats)+'</span>';
+    if(t.screen)chips+='<span class="chip">'+esc(t.screen)+'</span>';
+    if(t.bookingId)chips+='<span class="chip mono">'+esc(t.bookingId)+'</span>';
+    if(isUpcoming(t)&&countdown(t.date))chips+='<span class="chip"><b>'+esc(countdown(t.date))+'</b></span>';
+    var hasExtra=t.note||chips;
+    return '<figure class="tk-photo"><img loading="lazy" alt="Ticket for '+esc(t.title)+'" src="'+photoURL(t.photo)+'"></figure>'
+      + (hasExtra?'<div class="tk-extra">'+(chips?'<div class="tk-chips">'+chips+'</div>':'')+(t.note?'<span class="tk-memory-k" style="display:inline-block;margin-top:'+(chips?'12px':'0')+'">'+(isUpcoming(t)?'why I booked it':'the memory')+'</span><p>'+esc(t.note)+'</p>':'')+'</div>':'');
+  }
+  return mticket(t);
+}
+
+function stub(t){
+  var up=isUpcoming(t);
+  return '<article class="tk" tabindex="0" role="button" aria-expanded="false" data-id="'+esc(t.id)+'" aria-label="'+esc(t.title)+', tap to open the ticket">'
+    + '<div class="tk-top"><div class="tk-body"><div class="tk-cat-row"><span class="tk-cat">'+esc(t.kind||KIND[t.cat]||t.cat)+'</span>'
+    +   (up&&countdown(t.date)?'<span class="tk-flag">'+esc(countdown(t.date))+'</span>':'')+'</div>'
+    +   '<div class="tk-title">'+esc(t.title)+'</div>'
+    +   (t.sub?'<div class="tk-sub">'+esc(t.sub)+'</div>':'')
+    +   (t.venue?'<div class="tk-venue">'+esc(t.venue)+'</div>':'')
+    +   '<div class="tk-date">'+esc(fmtDate(t.date))+'</div></div>'
+    +   '<div class="tk-perf" aria-hidden="true"></div>'
+    +   '<div class="tk-stub"><div class="tk-admit">Admit One</div><div class="tk-barcode"></div><div class="tk-serial">'+esc(t.serial||serialFor(t))+'</div></div></div>'
+    + '<div class="tk-note"><div>'+expandInner(t)
+    +   '<div class="tk-actions"><button class="tk-del" data-del="'+esc(t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg>Remove</button></div>'
+    + '</div></div></article>';
+}
+
+var TICKETS=[];
+function render(){
+  _urls.forEach(function(u){URL.revokeObjectURL(u);});_urls=[];
+  var up=TICKETS.filter(isUpcoming);
+  var past=TICKETS.filter(function(t){return !isUpcoming(t);});
+  up.sort(function(a,b){return daysUntil(a.date)-daysUntil(b.date);});
+  past.sort(function(a,b){return (a.date<b.date?1:-1);});
+  document.getElementById('upN').textContent=up.length;
+  var col=document.getElementById('collected'),h='';
+  ORDER.forEach(function(cat,i){
+    var items=past.filter(function(t){return t.cat===cat;});
+    if(!items.length)return;
+    h+='<section class="cat"><div class="cat-h"><span class="nx">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+' kept</span></div><div class="shelf">'+items.map(stub).join('')+'</div></section>';
+  });
+  col.innerHTML=h;
+  document.getElementById('upcoming').innerHTML = up.length
+    ? '<section class="cat"><div class="cat-h"><span class="nx">&#9733;</span><h2>Upcoming</h2><span class="c">'+up.length+' booked</span></div><div class="shelf">'+up.map(stub).join('')+'</div></section>'
+    : '';
+  updateEmpty();
+  document.getElementById('banner').hidden = !TICKETS.some(function(t){return t.sample;});
+  wire();
+}
+function updateEmpty(){
+  var view=document.querySelector('.tab.is-on').getAttribute('data-view');
+  var cur=document.querySelector('.view[data-view="'+view+'"]');
+  var has=cur&&cur.querySelector('.tk');
+  var emptyEl=document.getElementById('empty');
+  emptyEl.hidden=!!has;
+  if(!has){
+    document.getElementById('emptyH').textContent = view==='upcoming'?'Nothing booked yet':(TICKETS.length?'No collected stubs':'No stubs yet');
+    document.getElementById('emptyP').textContent = view==='upcoming'?'Add a ticket with a future date and it waits here with its QR.':'Add a ticket and it lands on the right shelf.';
+  }
+}
+function reveal(viewEl){if(viewEl)viewEl.querySelectorAll('.tk').forEach(function(t){t.classList.add('seen');});}
+function wire(){
+  document.querySelectorAll('.tk').forEach(function(el){
+    if(el._w)return;el._w=1;
+    function toggle(){var o=el.classList.toggle('is-open');el.setAttribute('aria-expanded',String(o));}
+    el.addEventListener('click',function(e){
+      var d=e.target.closest('[data-del]'); if(d){e.stopPropagation();removeTicket(d.getAttribute('data-del'));return;}
+      toggle();
+    });
+    el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){if(e.target.closest('[data-del]'))return;e.preventDefault();toggle();}});
+  });
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(function(b){
+  b.addEventListener('click',function(){
+    var v=b.getAttribute('data-view');
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('is-on',x===b);x.setAttribute('aria-selected',String(x===b));});
+    document.querySelectorAll('.view').forEach(function(el){el.hidden=(el.getAttribute('data-view')!==v);});
+    var cur=document.querySelector('.view[data-view="'+v+'"]');reveal(cur);updateEmpty();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* ---------- toast ---------- */
+var toastT;function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show');},2200);}
+
+/* ---------- theme ---------- */
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('rm-theme',t);}catch(e){}
+  document.querySelector('meta[name=theme-color]').setAttribute('content', t==='light'?'#efe7d6':'#15120d');
+  document.getElementById('themeIcon').innerHTML = t==='light'
+    ? '<circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.4 1.4M17.6 17.6 19 19M19 5l-1.4 1.4M6.4 17.6 5 19"/>'
+    : '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>';
+}
+document.getElementById('themeBtn').addEventListener('click',function(){setTheme(document.documentElement.getAttribute('data-theme')==='light'?'dark':'light');});
+
+/* ---------- menu ---------- */
+var menuPop=document.getElementById('menuPop'),menuBtn=document.getElementById('menuBtn');
+function closeMenu(){menuPop.hidden=true;menuBtn.setAttribute('aria-expanded','false');}
+menuBtn.addEventListener('click',function(e){e.stopPropagation();var open=menuPop.hidden;menuPop.hidden=!open;menuBtn.setAttribute('aria-expanded',String(open));});
+document.addEventListener('click',function(e){if(!menuPop.hidden&&!e.target.closest('.menuwrap'))closeMenu();});
+
+/* ---------- add sheet ---------- */
+var scrim=document.getElementById('scrim'),sheet=document.getElementById('sheet'),form=document.getElementById('ticketForm');
+var pendingPhoto=null;
+function openSheet(){
+  form.reset();pendingPhoto=null;
+  var drop=document.getElementById('drop');drop.classList.remove('has');var old=drop.querySelector('img');if(old)old.remove();
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  scrim.hidden=false;sheet.hidden=false;requestAnimationFrame(function(){scrim.classList.add('show');sheet.classList.add('show');});
+  setTimeout(function(){document.getElementById('f-title').focus();},120);
+}
+function closeSheet(){scrim.classList.remove('show');sheet.classList.remove('show');setTimeout(function(){scrim.hidden=true;sheet.hidden=true;},240);}
+document.getElementById('addBtn').addEventListener('click',openSheet);
+document.getElementById('emptyAdd').addEventListener('click',openSheet);
+document.getElementById('closeSheet').addEventListener('click',closeSheet);
+document.getElementById('cancelBtn').addEventListener('click',closeSheet);
+scrim.addEventListener('click',closeSheet);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!sheet.hidden)closeSheet();});
+
+/* photo pick + downscale */
+var drop=document.getElementById('drop'),photoInput=document.getElementById('photo');
+function showPreview(blob){var d=document.getElementById('drop');var old=d.querySelector('img');if(old)old.remove();var img=document.createElement('img');img.src=URL.createObjectURL(blob);d.insertBefore(img,d.querySelector('.clear'));d.classList.add('has');}
+async function handleFile(file){
+  if(!file||!/^image\//.test(file.type)){toast('Pick an image file');return;}
+  try{pendingPhoto=await downscale(file);showPreview(pendingPhoto);}catch(e){pendingPhoto=file;showPreview(file);}
+}
+photoInput.addEventListener('change',function(){if(photoInput.files[0])handleFile(photoInput.files[0]);});
+document.getElementById('clearPhoto').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();pendingPhoto=null;var i=drop.querySelector('img');if(i)i.remove();drop.classList.remove('has');photoInput.value='';});
+['dragover','dragenter'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add('over');});});
+['dragleave'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove('over');});});
+drop.addEventListener('drop',function(e){e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+
+function downscale(file){return new Promise(function(res,rej){
+  var img=new Image();var url=URL.createObjectURL(file);
+  img.onload=function(){
+    var max=1600,w=img.width,h=img.height;
+    if(Math.max(w,h)>max){var r=max/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r);}
+    var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+    URL.revokeObjectURL(url);
+    c.toBlob(function(b){b?res(b):rej(new Error('toBlob failed'));},'image/jpeg',0.82);
+  };
+  img.onerror=function(){URL.revokeObjectURL(url);rej(new Error('image load failed'));};
+  img.src=url;
+});}
+
+form.addEventListener('submit',async function(e){
+  e.preventDefault();
+  var v=function(id){return document.getElementById(id).value.trim();};
+  var title=v('f-title');if(!title){toast('Give it a title');return;}
+  var cat=v('f-cat'),date=v('f-date');if(!date){toast('Pick a date');return;}
+  var t={id:uid(),cat:cat,kind:KIND[cat]||cat.toUpperCase(),title:title,sub:v('f-sub'),venue:v('f-venue'),date:date,time:v('f-time'),
+    format:v('f-format'),screen:v('f-screen'),seats:v('f-seats'),bookingId:v('f-booking'),price:v('f-price'),count:v('f-count'),provider:v('f-provider'),
+    note:v('f-note'),createdAt:Date.now()};
+  t.serial=serialFor(t);
+  if(pendingPhoto)t.photo=pendingPhoto;
+  try{await put(t);TICKETS.push(t);
+    var tab=document.querySelector('.tab[data-view="'+(isUpcoming(t)?'upcoming':'collected')+'"]');if(tab&&!tab.classList.contains('is-on'))tab.click();
+    render();reveal(document.querySelector('.view:not([hidden])'));
+    closeSheet();toast('Kept on your shelf');
+  }catch(err){toast('Could not save');console.error(err);}
+});
+
+/* ---------- delete ---------- */
+async function removeTicket(id){
+  var t=TICKETS.find(function(x){return x.id===id;});
+  if(!confirm('Remove "'+(t?t.title:'this ticket')+'" from your shelf?'))return;
+  try{await del(id);TICKETS=TICKETS.filter(function(x){return x.id!==id;});render();reveal(document.querySelector('.view:not([hidden])'));toast('Removed');}catch(e){toast('Could not remove');}
+}
+
+/* ---------- remove samples ---------- */
+async function clearSamples(){
+  var samples=TICKETS.filter(function(t){return t.sample;});
+  if(!samples.length){toast('No samples to remove');return;}
+  if(!confirm('Remove the '+samples.length+' sample tickets?'))return;
+  for(var i=0;i<samples.length;i++){await del(samples[i].id);}
+  TICKETS=TICKETS.filter(function(t){return !t.sample;});
+  try{localStorage.setItem('rm-samples-cleared','1');}catch(e){}
+  render();reveal(document.querySelector('.view:not([hidden])'));toast('Samples removed');closeMenu();
+}
+document.getElementById('clearSamplesBtn').addEventListener('click',clearSamples);
+document.getElementById('clearSamplesBtn2').addEventListener('click',clearSamples);
+
+/* ---------- export / import ---------- */
+function blobToDataURL(b){return new Promise(function(res){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.readAsDataURL(b);});}
+function dataURLtoBlob(u){return fetch(u).then(function(r){return r.blob();});}
+document.getElementById('exportBtn').addEventListener('click',async function(){
+  closeMenu();
+  var out=[];
+  for(var i=0;i<TICKETS.length;i++){var t=Object.assign({},TICKETS[i]);if(t.photo){t.photoData=await blobToDataURL(t.photo);}delete t.photo;out.push(t);}
+  var blob=new Blob([JSON.stringify({app:'Remember',version:1,exportedAt:new Date().toISOString(),tickets:out},null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='remember-backup.json';a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  toast('Backup downloaded');
+});
+document.getElementById('importBtn').addEventListener('click',function(){closeMenu();document.getElementById('importer').click();});
+document.getElementById('importer').addEventListener('change',async function(){
+  var file=this.files[0];if(!file)return;
+  try{
+    var data=JSON.parse(await file.text());var arr=(data&&data.tickets)||(Array.isArray(data)?data:[]);
+    var have={};TICKETS.forEach(function(t){have[t.id]=1;});var added=0;
+    for(var i=0;i<arr.length;i++){var t=arr[i];if(!t.id)t.id=uid();if(have[t.id])t.id=uid();
+      if(t.photoData){try{t.photo=await dataURLtoBlob(t.photoData);}catch(e){}delete t.photoData;}
+      delete t.sample; await put(t);TICKETS.push(t);added++;}
+    render();reveal(document.querySelector('.view:not([hidden])'));toast(added+' ticket'+(added===1?'':'s')+' imported');
+  }catch(e){toast('That file could not be read');console.error(e);}
+  this.value='';
+});
+
+/* ---------- seed samples ---------- */
+var SEED=[
+ {cat:"Concerts",title:"Coldplay",sub:"Music of the Spheres",venue:"Narendra Modi Stadium, Ahmedabad",date:"2025-01-26",time:"7:30 PM",provider:"BookMyShow",format:"Live in concert",screen:"Section C14",seats:"C14-118, 119",count:"2 Tickets",bookingId:"CP7741C",price:"₹17,000",note:"Seventy-thousand wristbands turned the stands into a slow galaxy. Fix You at full voice, nobody sat down."},
+ {cat:"Concerts",title:"A.R. Rahman",sub:"Marakkuma Nenjam",venue:"YMCA Grounds, Chennai",date:"2023-09-10",time:"6:30 PM",provider:"BookMyShow",format:"Live in concert",screen:"Block B",seats:"B-204, 205",count:"2 Tickets",bookingId:"ARR0096B",price:"₹12,000",note:"Roja melting into Kun Faya Kun. Thirty thousand people, one collective shiver."},
+ {cat:"Movies",title:"Oppenheimer",sub:"Christopher Nolan",cert:"A",venue:"PVR: Orion, Bengaluru",date:"2023-07-21",time:"9:00 PM",provider:"PVR",format:"English, IMAX 70mm",screen:"AUDI 4",seats:"H9, H10, H11",count:"3 Tickets",bookingId:"T4A7KZD",price:"₹1,710",note:"Three hours, no break, no popcorn. The silence after the Trinity test was deafening."},
+ {cat:"Movies",title:"Dune: Part Two",sub:"Denis Villeneuve",cert:"UA",venue:"PVR: Forum, Bengaluru",date:"2024-03-01",time:"10:15 PM",provider:"PVR",format:"English, IMAX",screen:"AUDI 1",seats:"F12, F13",count:"2 Tickets",bookingId:"TPA2CN6",price:"₹1,240",note:"Saw it twice in one week. The Fremen war cry still lives somewhere in my chest."},
+ {cat:"Events",title:"RCB vs CSK",sub:"Indian Premier League",venue:"M. Chinnaswamy Stadium, Bengaluru",date:"2024-05-18",time:"7:30 PM",provider:"BookMyShow",format:"T20 cricket",screen:"Upper Tier D",seats:"UT-441, 442",count:"2 Tickets",bookingId:"RCBUT441",price:"₹6,000",note:"Kohli at the boundary rope, forty thousand in red. Lost the game, kept the roar."},
+ {cat:"Events",title:"India vs Australia",sub:"ICC Cricket World Cup",venue:"Narendra Modi Stadium, Ahmedabad",date:"2023-11-19",time:"2:00 PM",provider:"BookMyShow",format:"ODI final",screen:"Lower Block L",seats:"L-1102, 1103",count:"2 Tickets",bookingId:"WCF2023",price:"₹14,000",note:"1.3 lakh people went silent at the same moment. Heartbreak, but what a night to be in the room."},
+ {cat:"One-off",title:"Zakir Khan",sub:"Tathastu",venue:"Good Shepherd Auditorium, Bengaluru",date:"2023-03-04",time:"8:30 PM",provider:"Zomato District",format:"Stand-up comedy",screen:"Row M",seats:"M-18, 19",count:"2 Tickets",bookingId:"ZKM018",price:"₹2,400",note:"Sakht launda, softened. Laughed till it hurt, then he made the whole hall go quiet."},
+ {cat:"One-off",title:"NH7 Weekender",sub:"The Happiest Music Festival",venue:"Mahalaxmi Lawns, Pune",date:"2022-11-26",time:"2:00 PM",provider:"Paytm Insider",format:"3-day festival",screen:"3-day pass",seats:"GA x2",count:"2 Passes",bookingId:"NH73DAY",price:"₹9,000",note:"Found four bands I now love. Mud, filter coffee, and the best sunset set of my life."},
+ {cat:"Movies",title:"Avatar: Fire and Ash",sub:"James Cameron",cert:"UA",venue:"PVR: Orion, Bengaluru",date:"2026-12-18",time:"9:30 PM",provider:"PVR",format:"English, IMAX 3D",screen:"AUDI 4",seats:"H7, H8",count:"2 Tickets",bookingId:"AVT3FA9",price:"₹1,400",note:"Blocked the row the day bookings opened. Pandora on the biggest screen in the city."},
+ {cat:"Concerts",title:"Dua Lipa",sub:"Radical Optimism Tour",venue:"Mahalaxmi Race Course, Mumbai",date:"2026-11-14",time:"7:00 PM",provider:"BookMyShow",format:"Live in concert",screen:"Fan Pit",seats:"FP-22, 23",count:"2 Tickets",bookingId:"DUARO14",price:"₹14,500",note:"Flying to Mumbai for one night. Fan pit, front of the rail, no regrets planned."},
+ {cat:"Events",title:"India vs Pakistan",sub:"ICC Men's T20 World Cup",venue:"Eden Gardens, Kolkata",date:"2026-06-22",time:"7:00 PM",provider:"BookMyShow",format:"T20 cricket",screen:"Block C",seats:"C-440, 441",count:"2 Tickets",bookingId:"INDPAK7",price:"₹18,000",note:"The ballot came through on the third try. Eden Gardens, under lights, for this one."}
+];
+async function seed(){
+  for(var i=0;i<SEED.length;i++){var t=Object.assign({id:uid(),sample:true,kind:KIND[SEED[i].cat]},SEED[i]);t.serial=serialFor(t);await put(t);}
+}
+
+/* ---------- boot ---------- */
+(async function(){
+  try{setTheme((localStorage.getItem('rm-theme'))||'dark');}catch(e){setTheme('dark');}
+  try{
+    await openDB();
+    TICKETS=await getAll();
+    var cleared=false;try{cleared=localStorage.getItem('rm-samples-cleared')==='1';}catch(e){}
+    if(!TICKETS.length && !cleared){await seed();TICKETS=await getAll();}
+    render();reveal(document.getElementById('collected'));
+  }catch(e){console.error(e);var em2=document.getElementById('empty');em2.hidden=false;document.getElementById('emptyH').textContent='Storage unavailable';document.getElementById('emptyP').textContent='Your browser blocked local storage, so tickets cannot be saved here.';}
+  if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js');}catch(e){}}
+  if(navigator.storage&&navigator.storage.persist){try{navigator.storage.persist();}catch(e){}}
+})();
+})();
+</script>
+</body>
+</html>

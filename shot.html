@@ -1,0 +1,57 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap">
+<style>
+html,body{margin:0;padding:0;background:transparent}
+#stage{display:flex;align-items:center;justify-content:center;overflow:hidden}
+.lock{display:flex;align-items:center}
+.R{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:-.045em;line-height:1}
+.word{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:-.045em;line-height:1;display:flex;align-items:flex-end}
+</style></head><body>
+<svg width="0" height="0"><defs>
+<filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+</defs></svg>
+<div id="stage"></div>
+<script>
+var PINK="#ec8fa6", RED="#c0453a";
+function brainPaths(){return '<g filter="url(#rough)" fill="none" stroke="'+PINK+'" stroke-linejoin="round" stroke-linecap="round">'
+ +'<path d="M55 18C46 12 33 13 28 22 C20 22 14 29 17 37 C10 41 9 51 16 56 C12 63 16 73 25 73 C28 81 38 84 45 79 C50 83 55 82 55 76 Z" stroke-width="3.2"/>'
+ +'<path d="M55 18C64 12 77 13 82 22 C90 22 96 29 93 37 C100 41 101 51 94 56 C98 63 94 73 85 73 C82 81 72 84 65 79 C60 83 55 82 55 76 Z" stroke-width="3.2"/>'
+ +'<path d="M55 17 C58 30 52 38 56 48 C60 58 52 66 55 78" stroke-width="2.6"/>'
+ +'<path d="M40 28 C46 30 47 36 43 39" stroke-width="2.4"/>'
+ +'<path d="M27 38 C34 38 37 43 34 48" stroke-width="2.4"/>'
+ +'<path d="M24 53 C31 52 35 56 33 61" stroke-width="2.4"/>'
+ +'<path d="M34 65 C40 64 44 68 42 72" stroke-width="2.4"/>'
+ +'<path d="M70 28 C64 30 63 36 67 39" stroke-width="2.4"/>'
+ +'<path d="M83 38 C76 38 73 43 76 48" stroke-width="2.4"/>'
+ +'<path d="M86 53 C79 52 75 56 77 61" stroke-width="2.4"/>'
+ +'<path d="M76 65 C70 64 66 68 68 72" stroke-width="2.4"/>'
+ +'</g>';}
+function dot(cx,cy,r){return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+RED+'"/>';}
+
+var p=new URLSearchParams(location.search);
+var art=p.get('art'), W=+p.get('w'), H=+p.get('h'), bg=p.get('bg')||'transparent', pad=+(p.get('pad')||0);
+var stage=document.getElementById('stage');
+stage.style.width=W+'px';stage.style.height=H+'px';stage.style.background=(bg==='transparent'?'transparent':bg);
+document.body.style.width=W+'px';document.body.style.height=H+'px';
+
+if(art==='icon'){
+  stage.innerHTML='<svg width="'+W+'" height="'+H+'" viewBox="0 0 120 120"><rect width="120" height="120" rx="27" fill="#15120d"/>'+brainPaths()+dot(103,100,10)+'</svg>';
+}else if(art==='icon-pad'){ // maskable: brain centered with safe margins, no corner dot clip
+  stage.innerHTML='<svg width="'+W+'" height="'+H+'" viewBox="-6 -10 132 140"><rect x="-6" y="-10" width="132" height="140" fill="#15120d"/>'+brainPaths()+dot(96,96,9)+'</svg>';
+}else if(art==='mark'){
+  var s=Math.min(W,H)-pad*2;
+  stage.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="12 9 100 104">'+brainPaths()+dot(103,100,10)+'</svg>';
+}else if(art==='lockup'){
+  var ink=p.get('ink')||'#f2e9d6';
+  var h=H-pad*2, bs=Math.round(h*0.95), fs=Math.round(h*0.86);
+  stage.innerHTML='<span class="lock"><span class="R" style="font-size:'+fs+'px;color:'+ink+'">R</span>'
+    +'<svg width="'+bs+'" height="'+bs+'" viewBox="6 6 112 112" style="margin-left:'+Math.round(h*0.02)+'px">'+brainPaths()+dot(103,100,10)+'</svg></span>';
+}else if(art==='word'){
+  var ink2=p.get('ink')||'#f2e9d6';
+  var h2=H-pad*2, fs2=Math.round(h2*0.74), bs2=Math.round(h2*0.92);
+  stage.innerHTML='<span class="word" style="font-size:'+fs2+'px;color:'+ink2+'">Remember<svg width="'+bs2+'" height="'+bs2+'" viewBox="6 6 112 112" style="margin-left:'+Math.round(h2*0.01)+'px;transform:translateY('+Math.round(h2*0.16)+'px)">'+brainPaths()+dot(103,100,10)+'</svg></span>';
+}
+document.title='READY';
+</script>
+</body></html>

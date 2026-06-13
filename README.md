@@ -10,16 +10,41 @@ out the original ticket** — poster, seats, booking ID and all — with the one
 wrote about that night tucked underneath. A **Collected / Upcoming** tab keeps the nights
 you've already had separate from the ones still ahead.
 
-## Three directions
+## The app
 
-This repo ships three complete design directions of the same shelf. Same memories in each,
-three different feelings. Open [`index.html`](index.html) to choose, or jump straight in:
+[`index.html`](index.html) is the **real, working app** — an installable PWA that runs
+entirely in the browser:
+
+- **Add a ticket** with the `+` button: drop a **photo or screenshot of the real ticket**,
+  or type the details (title, shelf, date, venue, seats, booking ID, the memory). It's
+  filed automatically — past events go to **Collected**, future ones to **Upcoming**.
+- **Tap a stub** to light it up. If you added a photo, you see *that* photo; if you typed
+  the details, you get a faithful recreation of the M-ticket (QR for upcoming, an
+  "Attended" stamp for past).
+- **Your stubs live on your device** (IndexedDB) — no account, no server, nothing leaves
+  the browser. **Export / Import** a `.json` backup from the `⋯` menu to move between
+  devices.
+- **Light / dark** theme toggle, **installable** (Add to Home Screen), works offline.
+
+First run is seeded with sample tickets so the shelf isn't empty — clear them anytime from
+the banner or the menu.
+
+## Design directions
+
+[`directions.html`](directions.html) holds the three static explorations behind the app —
+same memories, three feelings:
 
 | | Direction | The feeling |
 |---|---|---|
 | **A** | [The Vintage Shelf, light](variant-a-shelf.html) | Warm paper, torn stubs on a slight tilt, a soft amber glow. The drawer itself. |
-| **B** | [The Vintage Shelf, dark](variant-b-shelf-dark.html) | The same shelf after dark. Same stubs, same amber glow, on warm near-black. |
+| **B** | [The Vintage Shelf, dark](variant-b-shelf-dark.html) | The same shelf after dark. Same stubs, same amber glow, on warm near-black. The app's default. |
 | **C** | [The Editorial Wall](variant-c-editorial.html) | Oversized type, a filed grid, an electric accent. The stubs as a printed index. |
+
+## Brand
+
+The mark is an **R** with a hand-sketched brain (memory) and a terracotta fullstop —
+`logo.png` / `logo-light.png` / `logo-mark.png` (transparent), with `icon.svg` and the
+PWA icons generated from it. Regenerate any size with [`shot.html`](shot.html).
 
 ## How it works
 
