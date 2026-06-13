@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Remember — keep your ticket stubs</title>
+<title>Remember: keep your ticket stubs</title>
 <meta name="description" content="A nostalgic shelf for the ticket stubs you kept. Add a photo, screenshot or the details of a ticket, and tap a stub to light it up and remember the night." />
 <meta name="theme-color" content="#15120d" />
 <link rel="manifest" href="manifest.json" />
@@ -290,7 +290,7 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
 <a class="skip" href="#main">Skip to your shelf</a>
 
 <header class="appbar"><div class="in">
-  <a class="brand" href="./" aria-label="Remember — home"><svg class="mark" viewBox="0 0 120 120" aria-hidden="true" id="brandMark"></svg>R<span class="dot">.</span></a>
+  <a class="brand" href="./" aria-label="Remember, home"><svg class="mark" viewBox="0 0 120 120" aria-hidden="true" id="brandMark"></svg>R<span class="dot">.</span></a>
   <div class="spacer"></div>
   <button class="ib" id="themeBtn" aria-label="Toggle light or dark" title="Light / dark">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" id="themeIcon"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
@@ -312,9 +312,9 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
 </div></header>
 
 <section class="hero"><div class="wrap">
-  <div class="eye">A shelf for the ones you kept</div>
+  <div class="eye">Keep the stub, keep the night</div>
   <h1>Remember<span class="dot">.</span></h1>
-  <p>The ticket stubs we used to keep in a drawer. Add one, then tap it to light it up and pull out the original ticket, and the memory.</p>
+  <p>The ticket stubs we used to keep in a drawer, lit up again. Add one, tap it, and the night comes back to you.</p>
   <p class="stats" id="stats" hidden></p>
   <div class="tabs" role="tablist" aria-label="Which tickets">
     <button class="tab is-on" role="tab" aria-selected="true" data-view="collected">Collected</button>
@@ -357,7 +357,7 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
     <label class="drop" id="drop" for="photo">
       <input type="file" id="photo" accept="image/*" multiple hidden />
       <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="8.5" cy="9.5" r="1.5"/></svg>
-      <div class="t">Add photos or screenshots</div><div class="s">One or several — we read each and sort them onto the right shelf</div></div>
+      <div class="t">Add photos or screenshots</div><div class="s">One or several. We read each and sort them onto the right shelf</div></div>
       <button type="button" class="clear" id="clearPhoto" aria-label="Remove photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
       <div class="drop-status" id="dropStatus"><span class="spin"></span><svg class="ok" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg><span id="dropStatusText"></span></div>
     </label>
@@ -519,6 +519,7 @@ function stub(t){
     +   '<div class="tk-stub"><div class="tk-admit">Admit One</div><div class="tk-barcode"></div><div class="tk-serial">'+esc(t.serial||serialFor(t))+'</div></div></div>'
     + '<div class="tk-note"><div>'+expandInner(t)
     +   '<div class="tk-actions">'
+    +     '<button class="tk-act" type="button" data-share="'+esc(t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4M12 2v13"/></svg>Share</button>'
     +     (up?'<button class="tk-act" type="button" data-cal="'+esc(t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Calendar</button>':'')
     +     '<button class="tk-act" type="button" data-edit="'+esc(t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit</button>'
     +     '<button class="tk-del" type="button" data-del="'+esc(t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg>Remove</button>'
@@ -588,6 +589,7 @@ function wire(){
       var d=e.target.closest('[data-del]'); if(d){e.stopPropagation();removeTicket(d.getAttribute('data-del'));return;}
       var ed=e.target.closest('[data-edit]'); if(ed){e.stopPropagation();editTicket(ed.getAttribute('data-edit'));return;}
       var cl=e.target.closest('[data-cal]'); if(cl){e.stopPropagation();addToCalendar(cl.getAttribute('data-cal'));return;}
+      var sh=e.target.closest('[data-share]'); if(sh){e.stopPropagation();shareTicket(sh.getAttribute('data-share'));return;}
       var im=e.target.closest('.tk-photo img'); if(im){e.stopPropagation();openLightbox(im.getAttribute('src'));return;}
       toggle();
     });
@@ -709,8 +711,8 @@ async function scanTicket(blob){
     var r=await T.recognize(blob,'eng',{logger:function(m){if(m.status==='recognizing text'){dropStatus('Reading your ticket… '+Math.round((m.progress||0)*100)+'%');}}});
     var text=(r&&r.data&&r.data.text)||'';
     var n=fillFromText(text);
-    if(n)dropStatus('Filled '+n+' field'+(n===1?'':'s')+' — please check',{done:true,hide:3200});
-    else dropStatus('Couldn’t read this one — type the details',{done:true,hide:3200});
+    if(n)dropStatus('Filled '+n+' field'+(n===1?'':'s')+', please check',{done:true,hide:3200});
+    else dropStatus('Couldn’t read this one, type the details',{done:true,hide:3200});
   }catch(e){console.warn('OCR skipped:',e);dropStatus('',{});}
 }
 function setIfEmpty(id,val){if(val==null)return 0;val=String(val).trim();if(!val)return 0;var el=document.getElementById(id);if(el&&!el.value.trim()){el.value=val;return 1;}return 0;}
@@ -800,7 +802,7 @@ async function openBatch(files){
 }
 function refreshBatchProg(){
   var live=batchDrafts.filter(Boolean).length;
-  document.getElementById('batchProg').textContent=live?('Read '+live+' ticket'+(live>1?'s':'')+' — check the shelf and title for each, then add'):'Nothing to add';
+  document.getElementById('batchProg').textContent=live?('Read '+live+' ticket'+(live>1?'s':'')+'. Check the shelf and title for each, then add'):'Nothing to add';
   var save=document.getElementById('batchSave');save.disabled=!live;save.textContent=live?('Add '+live+' to shelf'):'Add to shelf';
 }
 function addBatchRow(draft){
@@ -831,7 +833,7 @@ async function saveBatch(){
   render();reveal(document.querySelector('.view:not([hidden])'));
   var parts=ORDER.filter(function(c){return counts[c];}).map(function(c){return counts[c]+' '+c;});
   _lockY=0;closeBatch();
-  toast('Added '+live.length+' — '+parts.join(', '));
+  toast('Added '+live.length+': '+parts.join(', '));
 }
 function closeBatch(){
   batchSheet.classList.remove('show');scrim.classList.remove('show');
@@ -902,6 +904,52 @@ function addToCalendar(id){
   var a=document.createElement('a');a.href=url;a.download=((t.title||'event').replace(/[^a-z0-9]+/gi,'-').toLowerCase().replace(/^-|-$/g,'')||'event')+'.ics';a.click();
   setTimeout(function(){URL.revokeObjectURL(url);},800);
   toast('Calendar file downloaded');
+}
+
+/* ---------- shareable image card ---------- */
+var BRAIN_D=[['M55 18C46 12 33 13 28 22 C20 22 14 29 17 37 C10 41 9 51 16 56 C12 63 16 73 25 73 C28 81 38 84 45 79 C50 83 55 82 55 76 Z',3.4],['M55 18C64 12 77 13 82 22 C90 22 96 29 93 37 C100 41 101 51 94 56 C98 63 94 73 85 73 C82 81 72 84 65 79 C60 83 55 82 55 76 Z',3.4],['M55 17 C58 30 52 38 56 48 C60 58 52 66 55 78',2.8],['M40 28 C46 30 47 36 43 39',2.6],['M27 38 C34 38 37 43 34 48',2.6],['M24 53 C31 52 35 56 33 61',2.6],['M34 65 C40 64 44 68 42 72',2.6],['M70 28 C64 30 63 36 67 39',2.6],['M83 38 C76 38 73 43 76 48',2.6],['M86 53 C79 52 75 56 77 61',2.6],['M76 65 C70 64 66 68 68 72',2.6]];
+function cBrain(x,ox,oy,size){var s=size/120;x.save();x.translate(ox,oy);x.scale(s,s);x.strokeStyle='#ec8fa6';x.lineCap='round';x.lineJoin='round';BRAIN_D.forEach(function(p){x.lineWidth=p[1];x.stroke(new Path2D(p[0]));});x.restore();}
+function cRect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
+function cWrap(x,text,a,b,maxW,lh,font){if(font)x.font=font;var words=String(text).split(/\s+/),line='',yy=b;for(var i=0;i<words.length;i++){var test=line?line+' '+words[i]:words[i];if(x.measureText(test).width>maxW&&line){x.fillText(line,a,yy);line=words[i];yy+=lh;}else line=test;}x.fillText(line,a,yy);return yy;}
+function cBarcode(x,x0,y0,w,h,seed){var s=2166136261;seed=String(seed);for(var i=0;i<seed.length;i++){s^=seed.charCodeAt(i);s=(s*16777619)>>>0;}function rnd(){s^=s<<13;s^=s>>>17;s^=s<<5;s>>>=0;return (s>>>0)/4294967296;}x.fillStyle='rgba(242,233,214,0.82)';var px=x0;while(px<x0+w-4){var bw=2+Math.floor(rnd()*6);if(rnd()>0.4)x.fillRect(px,y0,bw,h);px+=bw+2+Math.floor(rnd()*3);}}
+function cStamp(x,cx,cy,up,t){x.save();x.translate(cx,cy);x.rotate(-8*Math.PI/180);var col=up?'#eaa54a':'#e3604f';x.strokeStyle=col;x.lineWidth=3;cRect(x,-140,-58,280,116,14);x.stroke();x.fillStyle=col;x.textAlign='center';x.textBaseline='middle';x.font='700 38px "Space Grotesk"';x.fillText(up?'UPCOMING':'ATTENDED',0,-14);x.font='400 24px "Space Mono"';x.fillText(up?(countdown(t.date)||'').toUpperCase():fmtDate(t.date),0,24);x.restore();x.textAlign='left';x.textBaseline='alphabetic';}
+function makeShareCard(t){
+  var W=1080,H=1350,P=88,canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;var x=canvas.getContext('2d');var up=isUpcoming(t);
+  x.fillStyle='#15120d';x.fillRect(0,0,W,H);
+  var g1=x.createRadialGradient(200,180,0,200,180,680);g1.addColorStop(0,'rgba(234,165,74,0.16)');g1.addColorStop(1,'rgba(234,165,74,0)');x.fillStyle=g1;x.fillRect(0,0,W,H);
+  var g2=x.createRadialGradient(940,1180,0,940,1180,680);g2.addColorStop(0,'rgba(227,96,79,0.10)');g2.addColorStop(1,'rgba(227,96,79,0)');x.fillStyle=g2;x.fillRect(0,0,W,H);
+  cRect(x,40,40,W-80,H-80,30);x.strokeStyle='rgba(242,233,214,0.12)';x.lineWidth=2;x.stroke();
+  cBrain(x,P,P-2,60);
+  x.fillStyle='#f2e9d6';x.font='700 42px "Space Grotesk"';x.textBaseline='alphabetic';x.fillText('Remember',P+80,P+46);
+  var rw=x.measureText('Remember').width;x.fillStyle='#e3604f';x.fillText('.',P+80+rw+3,P+46);
+  x.strokeStyle='rgba(242,233,214,0.16)';x.lineWidth=2;x.setLineDash([8,11]);x.beginPath();x.moveTo(P,P+96);x.lineTo(W-P,P+96);x.stroke();x.setLineDash([]);
+  var y=P+196;
+  x.fillStyle='#e3604f';x.font='700 26px "Space Mono"';x.fillText((t.kind||t.cat||'').toUpperCase(),P,y);
+  x.fillStyle='#f3ead8';y=cWrap(x,t.title||'',P,y+96,W-2*P,98,'700 90px "Space Grotesk"');
+  if(t.sub){x.fillStyle='rgba(243,234,216,0.62)';x.font='400 38px "Space Grotesk"';x.fillText(t.sub,P,y+54);y+=54;}
+  y+=80;
+  if(t.venue){x.fillStyle='rgba(243,234,216,0.5)';y=cWrap(x,t.venue,P,y,W-2*P,42,'400 33px "Space Grotesk"');}
+  x.fillStyle='#f3ead8';x.font='400 38px "Space Mono"';x.fillText(fmtDate(t.date)+(t.time?'   '+t.time:''),P,y+60);
+  var by=H-446;cBarcode(x,P,by,W-2*P,92,t.serial||t.id);
+  x.fillStyle='rgba(243,234,216,0.5)';x.font='400 25px "Space Mono"';x.fillText(t.serial||'',P,by+142);
+  if(t.note){x.fillStyle='#eaa54a';x.font='400 23px "Space Mono"';x.fillText(up?'WHY I BOOKED IT':'THE MEMORY',P,H-214);x.fillStyle='rgba(243,234,216,0.88)';cWrap(x,'“'+t.note+'”',P,H-170,W-2*P-150,42,'400 34px "Space Grotesk"');}
+  cStamp(x,W-P-150,H-300,up,t);
+  x.fillStyle='rgba(243,234,216,0.4)';x.font='400 23px "Space Mono"';x.textAlign='left';x.fillText('kept on Remember',P,H-66);x.textAlign='right';x.fillText('nikhilballal.com',W-P,H-66);x.textAlign='left';
+  return canvas;
+}
+function dataURLtoBlobSync(d){var p=d.split(','),mime=p[0].match(/:(.*?);/)[1],b=atob(p[1]),n=b.length,u=new Uint8Array(n);while(n--)u[n]=b.charCodeAt(n);return new Blob([u],{type:mime});}
+function shareTicket(id){
+  var t=TICKETS.find(function(x){return x.id===id;});if(!t)return;
+  try{
+    var fname=((t.title||'ticket').replace(/[^a-z0-9]+/gi,'-').toLowerCase().replace(/^-|-$/g,'')||'ticket')+'-remember.png';
+    var blob=dataURLtoBlobSync(makeShareCard(t).toDataURL('image/png'));
+    var file=new File([blob],fname,{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:t.title||'Remember',text:'A stub I kept on Remember.'}).catch(function(){});
+    }else{
+      var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=fname;a.click();setTimeout(function(){URL.revokeObjectURL(url);},900);toast('Card saved');
+    }
+  }catch(e){console.error(e);toast('Could not make the card');}
 }
 
 /* ---------- remove samples ---------- */
