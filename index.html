@@ -246,6 +246,22 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
 /* toast */
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:var(--paper);font-size:13.5px;padding:11px 18px;border-radius:999px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;box-shadow:0 14px 30px -12px rgba(0,0,0,.5);}
 .toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* bulk import */
+.batch-prog{display:flex;align-items:center;gap:9px;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.03em;color:var(--ink-2);min-height:18px;margin-bottom:6px;}
+.batch-prog .spin{width:13px;height:13px;border:2px solid var(--field-line);border-top-color:var(--glow);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+.brow{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line-2);}
+.brow:first-of-type{border-top:0;}
+.bthumb{width:50px;height:66px;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid var(--line-2);background:var(--field);}
+.bfields{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+.bfields .btitle{width:100%;font:inherit;font-size:15px;font-weight:600;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:9px;padding:9px 11px;outline:none;}
+.bfields .btitle:focus,.brow2 select:focus,.brow2 input:focus{border-color:var(--glow);}
+.brow2{display:flex;gap:8px;}
+.brow2 select,.brow2 input{flex:1;min-width:0;font:inherit;font-size:13px;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:9px;padding:8px 9px;outline:none;-webkit-appearance:none;appearance:none;}
+.brow2 input[type=date]::-webkit-date-and-time-value{text-align:left;}
+.bremove{flex-shrink:0;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.bremove:hover{color:var(--stamp);border-color:var(--stamp);}
+.bremove svg{width:14px;height:14px;}
 </style>
 </head>
 <body>
@@ -308,9 +324,9 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
   </div>
   <form id="ticketForm" class="sheet-b">
     <label class="drop" id="drop" for="photo">
-      <input type="file" id="photo" accept="image/*" hidden />
+      <input type="file" id="photo" accept="image/*" multiple hidden />
       <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="8.5" cy="9.5" r="1.5"/></svg>
-      <div class="t">Add a photo or screenshot</div><div class="s">Of the real ticket — it shows when you tap the stub</div></div>
+      <div class="t">Add photos or screenshots</div><div class="s">One or several — we read each and sort them onto the right shelf</div></div>
       <button type="button" class="clear" id="clearPhoto" aria-label="Remove photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
       <div class="drop-status" id="dropStatus"><span class="spin"></span><svg class="ok" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg><span id="dropStatusText"></span></div>
     </label>
@@ -341,6 +357,22 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
   <div class="sheet-f">
     <button type="button" class="btn-ghost" id="cancelBtn">Cancel</button>
     <button type="submit" form="ticketForm" class="btn-primary" id="saveBtn">Keep this stub</button>
+  </div>
+</div>
+
+<!-- bulk import review sheet -->
+<div class="sheet" id="batchSheet" hidden role="dialog" aria-modal="true" aria-labelledby="batchTitle">
+  <div class="sheet-h">
+    <h2 id="batchTitle">Import tickets</h2>
+    <button class="ib" id="closeBatch" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="sheet-b">
+    <div class="batch-prog" id="batchProg"></div>
+    <div id="batchList"></div>
+  </div>
+  <div class="sheet-f">
+    <button type="button" class="btn-ghost" id="cancelBatch">Cancel</button>
+    <button type="button" class="btn-primary" id="batchSave" disabled>Add to shelf</button>
   </div>
 </div>
 
@@ -552,8 +584,8 @@ document.getElementById('addBtn').addEventListener('click',openSheet);
 document.getElementById('emptyAdd').addEventListener('click',openSheet);
 document.getElementById('closeSheet').addEventListener('click',closeSheet);
 document.getElementById('cancelBtn').addEventListener('click',closeSheet);
-scrim.addEventListener('click',closeSheet);
-document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!sheet.hidden)closeSheet();});
+scrim.addEventListener('click',function(){if(!batchSheet.hidden)closeBatch();else closeSheet();});
+document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!batchSheet.hidden)closeBatch();else if(!sheet.hidden)closeSheet();});
 
 /* photo pick + downscale */
 var drop=document.getElementById('drop'),photoInput=document.getElementById('photo');
@@ -563,7 +595,7 @@ async function handleFile(file){
   try{pendingPhoto=await downscale(file);showPreview(pendingPhoto);}catch(e){pendingPhoto=file;showPreview(file);}
   scanTicket(pendingPhoto);
 }
-photoInput.addEventListener('change',function(){if(photoInput.files[0])handleFile(photoInput.files[0]);});
+photoInput.addEventListener('change',function(){var fs=Array.prototype.slice.call(photoInput.files);photoInput.value='';if(!fs.length)return;if(fs.length>1)openBatch(fs);else handleFile(fs[0]);});
 document.getElementById('clearPhoto').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();pendingPhoto=null;var i=drop.querySelector('img');if(i)i.remove();drop.classList.remove('has');photoInput.value='';dropStatus(false);});
 
 /* ---------- read the ticket (on-device OCR) ---------- */
@@ -601,39 +633,46 @@ async function scanTicket(blob){
 }
 function setIfEmpty(id,val){if(val==null)return 0;val=String(val).trim();if(!val)return 0;var el=document.getElementById(id);if(el&&!el.value.trim()){el.value=val;return 1;}return 0;}
 function toISO(d,mon,yr){var M={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};var mm=M[mon.toLowerCase().slice(0,3)];if(!mm)return null;var y=yr||String(new Date().getFullYear());return y+'-'+mm+'-'+('0'+d).slice(-2);}
-function fillFromText(raw){
-  if(!raw)return 0;
+function parseTicket(raw){
+  var f={};if(!raw)return f;
   var lines=raw.split(/\n+/).map(function(l){return l.replace(/\s+/g,' ').trim();}).filter(Boolean);
-  var text=lines.join('\n');var n=0,cat=null,detail=false;
-  var m;
-  if((m=text.match(/booking\s*id[:\s.]*([A-Z0-9]{4,})/i))){n+=setIfEmpty('f-booking',m[1].toUpperCase());detail=true;}
-  if((m=text.match(/(?:total\s*amount|amount\s*paid|grand\s*total|total)\D{0,5}(\d[\d,]+(?:\.\d{1,2})?)/i))||(m=text.match(/₹\s*([\d,]+(?:\.\d{1,2})?)/))){n+=setIfEmpty('f-price','₹'+m[1].replace(/,$/,''));detail=true;}
-  if((m=text.match(/(\d{1,2})\s*ticket/i))){n+=setIfEmpty('f-count',m[1]+' Ticket'+(m[1]==='1'?'':'s'));detail=true;}
-  if((m=text.match(/(\d{1,2}:\d{2}\s*[AP]\.?M)/i))){n+=setIfEmpty('f-time',m[1].toUpperCase().replace(/\s+/g,' ').replace('.',''));detail=true;}
-  if((m=text.match(/\b(English|Hindi|Tamil|Telugu|Kannada|Malayalam|Punjabi|Bengali|Marathi)\b\s*,?\s*(IMAX\s*3?D?|4DX|[234]D|70\s?mm)?/i))){n+=setIfEmpty('f-format',m[0].replace(/\s+/g,' ').trim());detail=true;cat='Movies';}
-  if((m=text.match(/\b(AUDI(?:TORIUM)?|SCREEN)\s*[:#]?\s*([A-Z0-9]{1,4})\b/i))){n+=setIfEmpty('f-screen',(m[1].toUpperCase().replace('AUDITORIUM','AUDI')+' '+m[2].toUpperCase()).trim());detail=true;}
+  var text=lines.join('\n');var m;
+  if((m=text.match(/booking\s*id[:\s.]*([A-Z0-9]{4,})/i)))f.bookingId=m[1].toUpperCase();
+  if((m=text.match(/(?:total\s*amount|amount\s*paid|grand\s*total|total)\D{0,5}(\d[\d,]+(?:\.\d{1,2})?)/i))||(m=text.match(/₹\s*([\d,]+(?:\.\d{1,2})?)/)))f.price='₹'+m[1].replace(/,$/,'');
+  if((m=text.match(/(\d{1,2})\s*ticket/i)))f.count=m[1]+' Ticket'+(m[1]==='1'?'':'s');
+  if((m=text.match(/(\d{1,2}:\d{2}\s*[AP]\.?M)/i)))f.time=m[1].toUpperCase().replace(/\s+/g,' ').replace('.','');
+  if((m=text.match(/\b(English|Hindi|Tamil|Telugu|Kannada|Malayalam|Punjabi|Bengali|Marathi)\b\s*,?\s*(IMAX\s*3?D?|4DX|[234]D|70\s?mm)?/i))){f.format=m[0].replace(/\s+/g,' ').trim();f.cat='Movies';}
+  if((m=text.match(/\b(AUDI(?:TORIUM)?|SCREEN)\s*[:#]?\s*([A-Z0-9]{1,4})\b/i)))f.screen=(m[1].toUpperCase().replace('AUDITORIUM','AUDI')+' '+m[2].toUpperCase()).trim();
   var vline=lines.find(function(l){return /\b(PVR|INOX|Cinepolis|Carnival|Miraj|Cinemas|stadium|arena|grounds|auditorium|race\s?course|lawns|maidan)\b/i.test(l)&&l.length<70;});
-  if(vline){n+=setIfEmpty('f-venue',vline.replace(/[|·]+\s*$/,'').trim());if(/PVR|INOX|Cinepolis|Cinemas/i.test(vline))cat=cat||'Movies';else if(/stadium|arena|grounds|maidan/i.test(vline))cat=cat||'Events';}
-  if(/bookmyshow/i.test(text))setIfEmpty('f-provider','BookMyShow');
-  else if(/\bpvr\b/i.test(text))setIfEmpty('f-provider','PVR');
-  else if(/inox/i.test(text))setIfEmpty('f-provider','INOX');
-  else if(/district|zomato/i.test(text))setIfEmpty('f-provider','District');
-  else if(/insider|paytm/i.test(text))setIfEmpty('f-provider','Insider');
+  if(vline){f.venue=vline.replace(/[|·]+\s*$/,'').trim();if(/PVR|INOX|Cinepolis|Cinemas/i.test(vline))f.cat=f.cat||'Movies';else if(/stadium|arena|grounds|maidan/i.test(vline))f.cat=f.cat||'Events';}
+  if(/bookmyshow/i.test(text))f.provider='BookMyShow';else if(/\bpvr\b/i.test(text))f.provider='PVR';else if(/inox/i.test(text))f.provider='INOX';else if(/district|zomato/i.test(text))f.provider='District';else if(/insider|paytm/i.test(text))f.provider='Insider';
   var sm=text.match(/\b([A-Z]{0,3}-?[A-Z]?\d{1,3}(?:\s*,\s*[A-Z]{0,3}-?[A-Z]?\d{1,3}){1,9})\b/);
-  if(sm){n+=setIfEmpty('f-seats',sm[1].replace(/\s*,\s*/g,', '));detail=true;}
+  if(sm)f.seats=sm[1].replace(/\s*,\s*/g,', ');
   var dm=text.match(/\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*(\d{4})?\b/i);
-  if(dm){var iso=toISO(dm[1],dm[2],dm[3]);if(iso)n+=setIfEmpty('f-date',iso);}
+  if(dm){var iso=toISO(dm[1],dm[2],dm[3]);if(iso)f.date=iso;}
   var skip=/^(m-?ticket|watch trailer|tap (for|to)|cancellation|booking|total|amount|seat|screen|audi|english|hindi|tamil|telugu|kannada|qr[- ]|pr-|₹|rs\.?|\d|cancel|contact|support)/i;
   var tline=lines.find(function(l){return /[A-Za-z]/.test(l)&&l.length>1&&l.length<46&&!skip.test(l);});
-  if(tline){n+=setIfEmpty('f-title',tline.replace(/\s*\(([AU]{1,2}|UA)\)\s*$/i,'').trim());}
-  if(!cat&&/\bvs\b|\bv\/s\b/i.test(text))cat='Events';
-  if(cat){var sel=document.getElementById('f-cat');if(sel&&sel.value==='Concerts')sel.value=cat;}
+  if(tline)f.title=tline.replace(/\s*\(([AU]{1,2}|UA)\)\s*$/i,'').trim();
+  if(!f.cat){
+    if(/\b(vs|v\/s|ipl|world cup|t20|odi|test match|premier league|\bfc\b|cricket|football|grand prix|wrestling)\b/i.test(text))f.cat='Events';
+    else if(/\b(live in concert|in concert|concert|tour|unplugged|symphony|the weeknd|gig)\b/i.test(text))f.cat='Concerts';
+    else if(/\b(stand-?up|comedy|festival|weekender|open mic|theatre|play|musical)\b/i.test(text))f.cat='One-off';
+  }
+  return f;
+}
+function fillFromText(raw){
+  var f=parseTicket(raw);var n=0,detail=false;
+  n+=setIfEmpty('f-title',f.title);
+  n+=setIfEmpty('f-venue',f.venue);
+  n+=setIfEmpty('f-date',f.date);
+  [['f-time',f.time],['f-format',f.format],['f-screen',f.screen],['f-seats',f.seats],['f-booking',f.bookingId],['f-price',f.price],['f-count',f.count],['f-provider',f.provider]].forEach(function(p){var k=setIfEmpty(p[0],p[1]);n+=k;if(k)detail=true;});
+  if(f.cat){var sel=document.getElementById('f-cat');if(sel&&sel.value==='Concerts')sel.value=f.cat;}
   if(detail){var d=document.querySelector('details.more');if(d)d.open=true;}
   return n;
 }
 ['dragover','dragenter'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add('over');});});
 ['dragleave'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove('over');});});
-drop.addEventListener('drop',function(e){e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+drop.addEventListener('drop',function(e){e.preventDefault();drop.classList.remove('over');var fs=Array.prototype.slice.call(e.dataTransfer.files).filter(function(f){return /^image\//.test(f.type);});if(!fs.length)return;if(fs.length>1)openBatch(fs);else handleFile(fs[0]);});
 
 function downscale(file){return new Promise(function(res,rej){
   var img=new Image();var url=URL.createObjectURL(file);
@@ -647,6 +686,79 @@ function downscale(file){return new Promise(function(res,rej){
   img.onerror=function(){URL.revokeObjectURL(url);rej(new Error('image load failed'));};
   img.src=url;
 });}
+
+/* ---------- bulk import: read & classify many at once ---------- */
+var _worker=null, batchDrafts=[], _bthumbs=[];
+var batchSheet=document.getElementById('batchSheet');
+async function getWorker(){ if(_worker)return _worker; var T=await loadTesseract(); _worker=await T.createWorker('eng'); return _worker; }
+function killWorker(){ if(_worker){try{_worker.terminate();}catch(e){} _worker=null;} }
+async function openBatch(files){
+  files=Array.prototype.slice.call(files).filter(function(f){return /^image\//.test(f.type);}).slice(0,40);
+  if(!files.length)return;
+  if(!document.body.classList.contains('locked'))lockScroll();
+  sheet.classList.remove('show');sheet.hidden=true;
+  scrim.hidden=false;requestAnimationFrame(function(){scrim.classList.add('show');});
+  batchSheet.hidden=false;batchSheet.scrollTop=0;requestAnimationFrame(function(){batchSheet.classList.add('show');});
+  batchDrafts=[];_bthumbs.forEach(function(u){URL.revokeObjectURL(u);});_bthumbs=[];
+  document.getElementById('batchList').innerHTML='';
+  document.getElementById('batchTitle').textContent='Import '+files.length+' ticket'+(files.length>1?'s':'');
+  var save=document.getElementById('batchSave');save.disabled=true;save.textContent='Add to shelf';
+  var prog=document.getElementById('batchProg');
+  var worker=null;try{worker=await getWorker();}catch(e){}
+  for(var i=0;i<files.length;i++){
+    prog.innerHTML='<span class="spin"></span>Reading '+(i+1)+' of '+files.length+'…';
+    var blob;try{blob=await downscale(files[i]);}catch(e){blob=files[i];}
+    var fields={};
+    if(worker){try{var r=await worker.recognize(blob);fields=parseTicket(r.data.text);}catch(e){}}
+    var draft={photo:blob,f:fields};batchDrafts.push(draft);
+    addBatchRow(draft);
+  }
+  killWorker();
+  refreshBatchProg();
+}
+function refreshBatchProg(){
+  var live=batchDrafts.filter(Boolean).length;
+  document.getElementById('batchProg').textContent=live?('Read '+live+' ticket'+(live>1?'s':'')+' — check the shelf and title for each, then add'):'Nothing to add';
+  var save=document.getElementById('batchSave');save.disabled=!live;save.textContent=live?('Add '+live+' to shelf'):'Add to shelf';
+}
+function addBatchRow(draft){
+  var url=URL.createObjectURL(draft.photo);_bthumbs.push(url);
+  var f=draft.f||{};var cats=['Concerts','Movies','Events','One-off'];
+  var opts=cats.map(function(c){return '<option'+(((f.cat||'Concerts')===c)?' selected':'')+'>'+c+'</option>';}).join('');
+  var t=(f.title||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  var row=document.createElement('div');row.className='brow';
+  row.innerHTML='<img class="bthumb" src="'+url+'" alt="">'
+    +'<div class="bfields"><input class="btitle" placeholder="Title" value="'+t+'">'
+    +'<div class="brow2"><select class="bcat" aria-label="Shelf">'+opts+'</select><input class="bdate" type="date" aria-label="Date" value="'+(f.date||new Date().toISOString().slice(0,10))+'"></div></div>'
+    +'<button class="bremove" type="button" aria-label="Remove this ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>';
+  document.getElementById('batchList').appendChild(row);
+  row.querySelector('.btitle').addEventListener('input',function(){draft.f.title=this.value;});
+  row.querySelector('.bcat').addEventListener('change',function(){draft.f.cat=this.value;});
+  row.querySelector('.bdate').addEventListener('change',function(){draft.f.date=this.value;});
+  row.querySelector('.bremove').addEventListener('click',function(){var idx=batchDrafts.indexOf(draft);if(idx>=0)batchDrafts[idx]=null;row.remove();refreshBatchProg();});
+}
+async function saveBatch(){
+  var live=batchDrafts.filter(Boolean);if(!live.length){closeBatch();return;}
+  var counts={};
+  for(var i=0;i<live.length;i++){
+    var d=live[i],f=d.f||{};var cat=f.cat||'Concerts';
+    var t={id:uid(),cat:cat,kind:KIND[cat]||cat.toUpperCase(),title:((f.title||'').trim()||'Untitled'),sub:'',venue:f.venue||'',date:f.date||new Date().toISOString().slice(0,10),time:f.time||'',format:f.format||'',screen:f.screen||'',seats:f.seats||'',bookingId:f.bookingId||'',price:f.price||'',count:f.count||'',provider:f.provider||'',cert:f.cert||'',note:'',createdAt:Date.now(),photo:d.photo};
+    t.serial=serialFor(t);
+    try{await put(t);TICKETS.push(t);counts[cat]=(counts[cat]||0)+1;}catch(e){}
+  }
+  render();reveal(document.querySelector('.view:not([hidden])'));
+  var parts=ORDER.filter(function(c){return counts[c];}).map(function(c){return counts[c]+' '+c;});
+  _lockY=0;closeBatch();
+  toast('Added '+live.length+' — '+parts.join(', '));
+}
+function closeBatch(){
+  batchSheet.classList.remove('show');scrim.classList.remove('show');
+  setTimeout(function(){batchSheet.hidden=true;scrim.hidden=true;unlockScroll();_bthumbs.forEach(function(u){URL.revokeObjectURL(u);});_bthumbs=[];batchDrafts=[];document.getElementById('batchList').innerHTML='';},240);
+  killWorker();
+}
+document.getElementById('closeBatch').addEventListener('click',closeBatch);
+document.getElementById('cancelBatch').addEventListener('click',closeBatch);
+document.getElementById('batchSave').addEventListener('click',saveBatch);
 
 form.addEventListener('submit',async function(e){
   e.preventDefault();

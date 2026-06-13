@@ -23,6 +23,10 @@ entirely in the browser:
   pre-fill the title, date, time, venue, screen, seats, booking ID and amount for you to
   confirm. Reading the assets needs a connection the first time; everything else works
   offline.
+- **Bulk import:** pick or drop **several images at once** — each is read and
+  **auto-classified** onto the right shelf (Movies / Concerts / Events / One-off) and
+  dated, then a quick review list lets you fix any title, shelf or date before adding them
+  all in one go.
 - **Tap a stub** to light it up. If you added a photo, you see *that* photo; if you typed
   the details, you get a faithful recreation of the M-ticket (QR for upcoming, an
   "Attended" stamp for past).
