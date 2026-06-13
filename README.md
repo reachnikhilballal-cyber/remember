@@ -4,9 +4,11 @@ A nostalgic shelf for the ticket stubs you held on to.
 
 People used to keep ticket stubs in a drawer: the concert, the film, the match, the
 one-off night you never forgot. **Remember** is that drawer as a single, design-focused
-web page. Stubs are filed by kind (Concerts, Movies, Events, One-off), and the only
-interaction is the one that matters: **tap a stub and it lights up, then expands to show
-the one line you wrote about that night.**
+web page. Stubs are filed by kind (Concerts, Movies, Events, One-off), and the
+interaction is the one that matters: **tap a stub and it lights up, then expands to pull
+out the original ticket** — poster, seats, booking ID and all — with the one line you
+wrote about that night tucked underneath. A **Collected / Upcoming** tab keeps the nights
+you've already had separate from the ones still ahead.
 
 ## Three directions
 
@@ -15,17 +17,22 @@ three different feelings. Open [`index.html`](index.html) to choose, or jump str
 
 | | Direction | The feeling |
 |---|---|---|
-| **A** | [The Vintage Shelf](variant-a-shelf.html) | Warm paper, torn stubs on a slight tilt, a soft amber glow. The drawer itself. |
-| **B** | [The Dark Cinema](variant-b-cinema.html) | A near-black room. Each stub sits unlit until you tap it, then it ignites like a marquee. |
+| **A** | [The Vintage Shelf, light](variant-a-shelf.html) | Warm paper, torn stubs on a slight tilt, a soft amber glow. The drawer itself. |
+| **B** | [The Vintage Shelf, dark](variant-b-shelf-dark.html) | The same shelf after dark. Same stubs, same amber glow, on warm near-black. |
 | **C** | [The Editorial Wall](variant-c-editorial.html) | Oversized type, a filed grid, an electric accent. The stubs as a printed index. |
 
 ## How it works
 
 - Each file is **fully self-contained**: inline CSS and JS, no build step or dependencies
   to view. Fonts load from Google Fonts ([Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk)
-  for display, Space Mono / JetBrains Mono for the serials and dates).
-- Tickets are skeuomorphic stubs: a perforated tear edge, a barcode, a monospace serial.
-- The single interaction is `tap to glow + expand`. It is accessible (real button
+  for display, Space Mono for the serials and dates).
+- On the shelf, each ticket is a skeuomorphic **stub**: a perforated tear edge, a barcode,
+  a monospace serial. Tap it and it glows, then expands into a faithful recreation of the
+  **original M-ticket** (poster, format, screen, seats, booking ID, amount).
+- Because the event has already passed, the QR is replaced by an **"Attended"** rubber
+  stamp. Tickets in the **Upcoming** tab are still valid, so they keep their QR and show a
+  live countdown.
+- The single per-stub interaction is `tap to glow + expand`. It is accessible (real button
   semantics, keyboard support, `aria-expanded`) and honours `prefers-reduced-motion`.
 - The sample tickets are real, recognisable events so the shelf feels alive on first load.
 

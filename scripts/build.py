@@ -1,64 +1,150 @@
 #!/usr/bin/env python3
-"""Remember - build the three standalone variant HTMLs from one ticket set.
+"""Remember - build the variant HTMLs from one shared ticket set.
 
 Run:  python3 scripts/build.py
-Emits: variant-a-shelf.html, variant-b-cinema.html, variant-c-editorial.html, index.html
-Each output is fully self-contained (inline CSS + JS, fonts via Google Fonts link).
+Emits: variant-a-shelf.html (light), variant-b-shelf-dark.html (dark twin of A),
+       variant-c-editorial.html, index.html
+Each output is fully self-contained (inline CSS + JS, fonts via Google Fonts).
+Tap a stub -> it glows and expands to the recreated original ticket
+(QR replaced by an "Attended" stamp for past events, kept for Upcoming).
 """
 import io, json, os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# One ticket set, shared by all three variants so the design is what differs.
+# One ticket set, shared by every variant. Enriched to recreate the real
+# M-ticket on expand. `up` marks an upcoming (still-valid) ticket.
 TICKETS = [
-    {"cat": "Concerts", "kind": "CONCERT", "title": "Coldplay", "sub": "Music of the Spheres",
-     "venue": "Narendra Modi Stadium, Ahmedabad", "date": "26 Jan 2025", "serial": "CP-7741-C14",
-     "seat": "Section C14", "note": "Seventy-thousand wristbands turned the stands into a slow galaxy. Fix You at full voice, nobody sat down."},
-    {"cat": "Concerts", "kind": "CONCERT", "title": "Diljit Dosanjh", "sub": "Dil-Luminati Tour",
-     "venue": "Bengaluru", "date": "08 Dec 2024", "serial": "DL-2210-GA", "seat": "General",
-     "note": "The whole ground did bhangra at the same beat. First Punjabi gig that felt like a festival."},
-    {"cat": "Concerts", "kind": "CONCERT", "title": "A.R. Rahman", "sub": "Marakkuma Nenjam",
-     "venue": "YMCA Grounds, Chennai", "date": "10 Sep 2023", "serial": "ARR-0096-B", "seat": "Block B",
-     "note": "Roja melting into Kun Faya Kun. Thirty thousand people, one collective shiver."},
-    {"cat": "Movies", "kind": "IMAX 70MM", "title": "Oppenheimer", "sub": "Christopher Nolan",
-     "venue": "PVR Orion, Bengaluru", "date": "21 Jul 2023", "serial": "OPP-H7-IMAX", "seat": "Seat H7",
-     "note": "Three hours, no break, no popcorn. The silence after the Trinity test was deafening."},
-    {"cat": "Movies", "kind": "IMAX", "title": "Dune: Part Two", "sub": "Denis Villeneuve",
-     "venue": "PVR, Bengaluru", "date": "01 Mar 2024", "serial": "DUN-F12-X", "seat": "Seat F12",
-     "note": "Saw it twice in one week. The Fremen war cry still lives somewhere in my chest."},
-    {"cat": "Movies", "kind": "70MM RE-RELEASE", "title": "Interstellar", "sub": "10th Anniversary",
-     "venue": "Bengaluru", "date": "16 Nov 2024", "serial": "INT-J9-10Y", "seat": "Seat J9",
-     "note": "Cried at the docking scene, again. Hans Zimmer in 70mm is basically a religion."},
-    {"cat": "Events", "kind": "IPL", "title": "RCB vs CSK", "sub": "Indian Premier League",
-     "venue": "M. Chinnaswamy Stadium, Bengaluru", "date": "18 May 2024", "serial": "RCB-UT-441", "seat": "Upper Tier",
-     "note": "Kohli at the boundary rope, forty thousand in red. Lost the game, kept the roar."},
-    {"cat": "Events", "kind": "WORLD CUP FINAL", "title": "India vs Australia", "sub": "ICC Cricket World Cup",
-     "venue": "Narendra Modi Stadium, Ahmedabad", "date": "19 Nov 2023", "serial": "WC-FIN-2023", "seat": "Lower Block",
-     "note": "1.3 lakh people went silent at the same moment. Heartbreak, but what a night to be in the room."},
-    {"cat": "One-off", "kind": "STAND-UP", "title": "Zakir Khan", "sub": "Tathastu",
-     "venue": "Bengaluru", "date": "04 Mar 2023", "serial": "ZK-M-018", "seat": "Row M",
-     "note": "Sakht launda, softened. Laughed till it hurt, then he made the whole hall go quiet."},
-    {"cat": "One-off", "kind": "FESTIVAL", "title": "NH7 Weekender", "sub": "The Happiest Music Festival",
-     "venue": "Pune", "date": "26 Nov 2022", "serial": "NH7-3DAY-22", "seat": "3-day pass",
-     "note": "Found four bands I now love. Mud, filter coffee, and the best sunset set of my life."},
+  {"cat":"Concerts","kind":"CONCERT","title":"Coldplay","sub":"Music of the Spheres","cert":"",
+   "venue":"Narendra Modi Stadium, Ahmedabad","date":"26 Jan 2025","time":"7:30 PM","provider":"BookMyShow",
+   "format":"Live in concert","screen":"Section C14","seats":"C14-118, 119","count":"2 Tickets",
+   "bookingId":"CP7741C","price":"₹17,000","serial":"CP-7741-C14",
+   "note":"Seventy-thousand wristbands turned the stands into a slow galaxy. Fix You at full voice, nobody sat down."},
+  {"cat":"Concerts","kind":"CONCERT","title":"Diljit Dosanjh","sub":"Dil-Luminati Tour","cert":"",
+   "venue":"Bhartiya City, Bengaluru","date":"08 Dec 2024","time":"8:00 PM","provider":"Zomato District",
+   "format":"Live in concert","screen":"General","seats":"GA x2","count":"2 Tickets",
+   "bookingId":"DL2210GA","price":"₹9,800","serial":"DL-2210-GA",
+   "note":"The whole ground did bhangra on the same beat. First Punjabi gig that felt like a festival."},
+  {"cat":"Concerts","kind":"CONCERT","title":"A.R. Rahman","sub":"Marakkuma Nenjam","cert":"",
+   "venue":"YMCA Grounds, Chennai","date":"10 Sep 2023","time":"6:30 PM","provider":"BookMyShow",
+   "format":"Live in concert","screen":"Block B","seats":"B-204, 205","count":"2 Tickets",
+   "bookingId":"ARR0096B","price":"₹12,000","serial":"ARR-0096-B",
+   "note":"Roja melting into Kun Faya Kun. Thirty thousand people, one collective shiver."},
+  {"cat":"Movies","kind":"IMAX 70MM","title":"Oppenheimer","sub":"Christopher Nolan","cert":"A",
+   "venue":"PVR: Orion, Bengaluru","date":"21 Jul 2023","time":"9:00 PM","provider":"PVR",
+   "format":"English, IMAX 70mm","screen":"AUDI 4","seats":"H9, H10, H11","count":"3 Tickets",
+   "bookingId":"T4A7KZD","price":"₹1,710","serial":"OPP-H7-IMAX",
+   "note":"Three hours, no break, no popcorn. The silence after the Trinity test was deafening."},
+  {"cat":"Movies","kind":"IMAX","title":"Dune: Part Two","sub":"Denis Villeneuve","cert":"UA",
+   "venue":"PVR: Forum, Bengaluru","date":"01 Mar 2024","time":"10:15 PM","provider":"PVR",
+   "format":"English, IMAX","screen":"AUDI 1","seats":"F12, F13","count":"2 Tickets",
+   "bookingId":"TPA2CN6","price":"₹1,240","serial":"DUN-F12-X",
+   "note":"Saw it twice in one week. The Fremen war cry still lives somewhere in my chest."},
+  {"cat":"Movies","kind":"70MM RE-RELEASE","title":"Interstellar","sub":"10th Anniversary","cert":"UA",
+   "venue":"PVR: Orion, Bengaluru","date":"16 Nov 2024","time":"7:00 PM","provider":"PVR",
+   "format":"English, 70mm","screen":"AUDI 3","seats":"J9, J10","count":"2 Tickets",
+   "bookingId":"INT10YR","price":"₹980","serial":"INT-J9-10Y",
+   "note":"Cried at the docking scene, again. Hans Zimmer in 70mm is basically a religion."},
+  {"cat":"Events","kind":"IPL","title":"RCB vs CSK","sub":"Indian Premier League","cert":"",
+   "venue":"M. Chinnaswamy Stadium, Bengaluru","date":"18 May 2024","time":"7:30 PM","provider":"BookMyShow",
+   "format":"T20 cricket","screen":"Upper Tier D","seats":"UT-441, 442","count":"2 Tickets",
+   "bookingId":"RCBUT441","price":"₹6,000","serial":"RCB-UT-441",
+   "note":"Kohli at the boundary rope, forty thousand in red. Lost the game, kept the roar."},
+  {"cat":"Events","kind":"WORLD CUP FINAL","title":"India vs Australia","sub":"ICC Cricket World Cup","cert":"",
+   "venue":"Narendra Modi Stadium, Ahmedabad","date":"19 Nov 2023","time":"2:00 PM","provider":"BookMyShow",
+   "format":"ODI final","screen":"Lower Block L","seats":"L-1102, 1103","count":"2 Tickets",
+   "bookingId":"WCF2023","price":"₹14,000","serial":"WC-FIN-2023",
+   "note":"1.3 lakh people went silent at the same moment. Heartbreak, but what a night to be in the room."},
+  {"cat":"One-off","kind":"STAND-UP","title":"Zakir Khan","sub":"Tathastu","cert":"",
+   "venue":"Good Shepherd Auditorium, Bengaluru","date":"04 Mar 2023","time":"8:30 PM","provider":"Zomato District",
+   "format":"Stand-up comedy","screen":"Row M","seats":"M-18, 19","count":"2 Tickets",
+   "bookingId":"ZKM018","price":"₹2,400","serial":"ZK-M-018",
+   "note":"Sakht launda, softened. Laughed till it hurt, then he made the whole hall go quiet."},
+  {"cat":"One-off","kind":"FESTIVAL","title":"NH7 Weekender","sub":"The Happiest Music Festival","cert":"",
+   "venue":"Mahalaxmi Lawns, Pune","date":"26 Nov 2022","time":"2:00 PM","provider":"Paytm Insider",
+   "format":"3-day festival","screen":"3-day pass","seats":"GA x2","count":"2 Passes",
+   "bookingId":"NH73DAY","price":"₹9,000","serial":"NH7-3DAY-22",
+   "note":"Found four bands I now love. Mud, filter coffee, and the best sunset set of my life."},
+  # ---- Upcoming (still valid, keep the QR) ----
+  {"cat":"Movies","kind":"IMAX 3D","title":"Avatar: Fire and Ash","sub":"James Cameron","cert":"UA","up":True,
+   "venue":"PVR: Orion, Bengaluru","date":"18 Dec 2026","time":"9:30 PM","provider":"PVR",
+   "format":"English, IMAX 3D","screen":"AUDI 4","seats":"H7, H8","count":"2 Tickets",
+   "bookingId":"AVT3FA9","price":"₹1,400","serial":"AVT-H7-3D","countdown":"in 188 days",
+   "note":"Blocked the row the day bookings opened. Pandora on the biggest screen in the city."},
+  {"cat":"Concerts","kind":"CONCERT","title":"Dua Lipa","sub":"Radical Optimism Tour","cert":"","up":True,
+   "venue":"Mahalaxmi Race Course, Mumbai","date":"14 Nov 2026","time":"7:00 PM","provider":"BookMyShow",
+   "format":"Live in concert","screen":"Fan Pit","seats":"FP-22, 23","count":"2 Tickets",
+   "bookingId":"DUARO14","price":"₹14,500","serial":"DUA-FP-22","countdown":"in 154 days",
+   "note":"Flying to Mumbai for one night. Fan pit, front of the rail, no regrets planned."},
+  {"cat":"Events","kind":"T20 WORLD CUP","title":"India vs Pakistan","sub":"ICC Men's T20 World Cup","cert":"","up":True,
+   "venue":"Eden Gardens, Kolkata","date":"22 Feb 2026","time":"7:00 PM","provider":"BookMyShow",
+   "format":"T20 cricket","screen":"Block C","seats":"C-440, 441","count":"2 Tickets",
+   "bookingId":"INDPAK7","price":"₹18,000","serial":"IND-PAK-26","countdown":"in 9 days",
+   "note":"The ballot came through on the third try. Eden Gardens, under lights, for this one."},
 ]
 
 ORDER = ["Concerts", "Movies", "Events", "One-off"]
 DATA = json.dumps(TICKETS, ensure_ascii=False)
 
-# Shared interaction: tap a ticket -> it glows and expands its one-liner.
-# Accessible (button semantics, keyboard, aria-expanded), reduced-motion safe.
-TOGGLE_JS = """
+# ---- shared JS: fake-QR, recreated M-ticket panel, tabs, glow toggle ----
+SHARED_JS = r"""
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  // deterministic, QR-shaped pattern from the booking id (decorative)
+  function qr(seed){
+    var n=13, s=2166136261;
+    for(var i=0;i<seed.length;i++){ s^=seed.charCodeAt(i); s=(s*16777619)>>>0; }
+    function bit(){ s^=s<<13; s^=s>>>17; s^=s<<5; s>>>=0; return s&1; }
+    function finder(ox,oy){ var r=''; for(var y=0;y<3;y++)for(var x=0;x<3;x++){ if(x===0||x===2||y===0||y===2||(x===1&&y===1)) r+='<rect x="'+(ox+x)+'" y="'+(oy+y)+'" width="1" height="1"/>'; } return r; }
+    var cells='';
+    for(var y=0;y<n;y++)for(var x=0;x<n;x++){
+      if((x<3&&y<3)||(x>n-4&&y<3)||(x<3&&y>n-4)) continue;
+      if(bit()) cells+='<rect x="'+x+'" y="'+y+'" width="1" height="1"/>';
+    }
+    return '<svg viewBox="0 0 '+n+' '+n+'" class="mtk-qr-svg" aria-hidden="true">'+cells+finder(0,0)+finder(n-3,0)+finder(0,n-3)+'</svg>';
+  }
+  function poster(t){
+    var g = {Movies:'linear-gradient(150deg,#1d2740,#0a0d15)',Concerts:'linear-gradient(150deg,#4d2059,#7c2d3a)',Events:'linear-gradient(150deg,#163a26,#0e2330)','One-off':'linear-gradient(150deg,#43330f,#1c1408)'}[t.cat]||'linear-gradient(150deg,#222,#111)';
+    var tag = t.cat==='Movies' ? 'Trailer' : (t.kind||'');
+    return '<div class="mtk-poster" style="background:'+g+'"><span class="mtk-poster-t">'+esc(t.title)+'</span><span class="mtk-trailer">'+esc(tag)+'</span></div>';
+  }
+  function art(t){
+    if(t.up){
+      return '<div class="mtk-art"><div class="mtk-qr">'+qr(t.bookingId)+'</div><div class="mtk-live"><span class="mtk-dot"></span>Ticket live &middot; '+esc(t.countdown||'upcoming')+'</div></div>';
+    }
+    return '<div class="mtk-art"><div class="mtk-stamp"><span>Attended</span><b>'+esc(t.date)+'</b></div></div>';
+  }
+  function mticket(t){
+    return '<div class="mtk '+(t.up?'is-up':'is-past')+'">'
+     + '<div class="mtk-head">'+poster(t)
+     +   '<div class="mtk-hi"><div class="mtk-title">'+esc(t.title)+(t.cert?' <span class="cert">('+esc(t.cert)+')</span>':'')+'</div>'
+     +     '<div class="mtk-fmt">'+esc(t.format)+'</div>'
+     +     '<div class="mtk-when">'+esc(t.date)+' &middot; '+esc(t.time)+'</div>'
+     +     '<div class="mtk-venue">'+esc(t.venue)+'</div></div>'
+     +   '<div class="mtk-ml">M-Ticket</div></div>'
+     + '<div class="mtk-mid">'
+     +   '<div class="mtk-facts"><div class="mtk-count">'+esc(t.count)+'</div><div class="mtk-screen">'+esc(t.screen)+'</div><div class="mtk-seats">'+esc(t.seats)+'</div><div class="mtk-bk">Booking ID &middot; '+esc(t.bookingId)+'</div></div>'
+     +   art(t)
+     + '</div>'
+     + '<div class="mtk-foot"><span>'+(t.up?'Paid':'Total')+'</span><span class="mtk-price">'+esc(t.price)+'</span><span class="mtk-via">via '+esc(t.provider)+'</span></div>'
+     + (t.note ? '<div class="mtk-memory"><span class="mtk-memory-k">'+(t.up?'why I booked it':'the memory')+'</span><p>'+esc(t.note)+'</p></div>' : '')
+     + '</div>';
+  }
+  function tabs(){
+    var btns = document.querySelectorAll('.tab');
+    btns.forEach(function(b){
+      b.addEventListener('click', function(){
+        var v = b.getAttribute('data-view');
+        btns.forEach(function(x){ x.classList.toggle('is-on', x===b); x.setAttribute('aria-selected', String(x===b)); });
+        document.querySelectorAll('.view').forEach(function(el){ el.hidden = (el.getAttribute('data-view')!==v); });
+        window.scrollTo({top:0,behavior:'smooth'});
+      });
+    });
+  }
   function wire(){
     document.querySelectorAll('.tk').forEach(function(el){
-      function toggle(){
-        var open = el.classList.toggle('is-open');
-        el.setAttribute('aria-expanded', String(open));
-      }
-      el.addEventListener('click', toggle);
-      el.addEventListener('keydown', function(e){
-        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
-      });
+      function toggle(){ var o=el.classList.toggle('is-open'); el.setAttribute('aria-expanded',String(o)); }
+      el.addEventListener('click', function(e){ if(e.target.closest('a')) return; toggle(); });
+      el.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } });
     });
   }
 """
@@ -70,7 +156,7 @@ HEAD = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="__THEME__" />
 <title>Remember __VTITLE__</title>
-<meta name="description" content="Remember, a nostalgic shelf for the ticket stubs you kept. Concerts, movies, events, one-offs. Tap a stub to light it up and read the memory." />
+<meta name="description" content="Remember, a nostalgic shelf for the ticket stubs you kept. Tap a stub to light it up and pull out the original ticket and the memory." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="__FONTS__" />
@@ -86,19 +172,17 @@ __BODY__
 'use strict';
 var TICKETS = __DATA__;
 var ORDER = __ORDER__;
+__SHARED__
 __RENDER__
-__TOGGLE__
 (function(){
   render();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     var io = new IntersectionObserver(function(es){
       es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('seen'); io.unobserve(e.target); } });
-    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
     document.querySelectorAll('.tk').forEach(function(el){ io.observe(el); });
-  } else {
-    document.querySelectorAll('.tk').forEach(function(el){ el.classList.add('seen'); });
-  }
-  wire();
+  } else { document.querySelectorAll('.tk').forEach(function(el){ el.classList.add('seen'); }); }
+  wire(); tabs();
 })();
 </script>
 </body>
@@ -106,410 +190,362 @@ __TOGGLE__
 """
 
 def page(vtitle, vlabel, theme, fonts, css, body, render):
-    return (HEAD
-        .replace("__VTITLE__", vtitle).replace("__VLABEL__", vlabel)
+    return (HEAD.replace("__VTITLE__", vtitle).replace("__VLABEL__", vlabel)
         .replace("__THEME__", theme).replace("__FONTS__", fonts)
         .replace("__CSS__", css).replace("__BODY__", body)
-        .replace("__RENDER__", render).replace("__TOGGLE__", TOGGLE_JS)
+        .replace("__RENDER__", render).replace("__SHARED__", SHARED_JS)
         .replace("__DATA__", DATA).replace("__ORDER__", json.dumps(ORDER)))
 
 
 # =====================================================================
-# VARIANT A - THE VINTAGE SHELF  (light, kraft paper, warm amber glow)
+# THE VINTAGE SHELF design - shared by A (light) and B (dark twin).
+# Theme is set entirely by the :root variables block prepended per file.
 # =====================================================================
-A_FONTS = "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
-A_CSS = r"""
+VINTAGE_FONTS = "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+
+THEME_A = r"""
 :root{
   --paper:#efe7d6; --paper-2:#e7dcc6; --card:#f7f1e3; --ink:#211c15; --ink-2:rgba(33,28,21,.62);
   --ink-3:rgba(33,28,21,.40); --line:rgba(33,28,21,.16); --line-2:rgba(33,28,21,.10);
-  --glow:#cf7a2c; --glow-soft:rgba(207,122,44,.30); --stamp:#b23a2e;
-  --sans:'Space Grotesk',system-ui,sans-serif; --mono:'Space Mono',ui-monospace,monospace;
-  --ease:cubic-bezier(.16,1,.3,1);
+  --glow:#cf7a2c; --glow-soft:rgba(207,122,44,.32); --stamp:#b23a2e;
+  --mtk-bg:#161310; --mtk-card:#1c1813; --mtk-ink:#f3ead8; --mtk-ink-2:rgba(243,234,216,.6);
+  --mtk-ink-3:rgba(243,234,216,.4); --mtk-line:rgba(255,255,255,.1); --noise:.05;
 }
+"""
+THEME_B = r"""
+:root{
+  --paper:#15120d; --paper-2:#1b1711; --card:#221d15; --ink:#f2e9d6; --ink-2:rgba(242,233,214,.62);
+  --ink-3:rgba(242,233,214,.40); --line:rgba(242,233,214,.16); --line-2:rgba(242,233,214,.09);
+  --glow:#eaa54a; --glow-soft:rgba(234,165,74,.34); --stamp:#e3604f;
+  --mtk-bg:#100d09; --mtk-card:#181410; --mtk-ink:#f3ead8; --mtk-ink-2:rgba(243,234,216,.6);
+  --mtk-ink-3:rgba(243,234,216,.4); --mtk-line:rgba(255,255,255,.1); --noise:.04;
+}
+"""
+
+VINTAGE_CSS = r"""
 *{box-sizing:border-box;margin:0;padding:0;}
 html{-webkit-text-size-adjust:100%;}
 body{
-  background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.5;
+  background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;min-height:100dvh;
   background-image:
-    radial-gradient(circle at 18% 12%, rgba(255,255,255,.45), transparent 38%),
-    radial-gradient(circle at 86% 84%, rgba(150,120,70,.10), transparent 46%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
-  min-height:100dvh;
+    radial-gradient(circle at 18% 10%, rgba(255,255,255,.10), transparent 40%),
+    radial-gradient(circle at 86% 88%, rgba(150,120,70,.10), transparent 46%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
 }
+.mono{font-family:'Space Mono',ui-monospace,monospace;}
 .skip{position:absolute;left:-999px;}.skip:focus{left:16px;top:16px;background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;z-index:99;}
 .wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
 
-/* masthead */
-.mast{padding:72px 0 30px;text-align:center;}
-.mast .eye{font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--stamp);}
+.mast{padding:72px 0 8px;text-align:center;}
+.mast .eye{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--stamp);}
 .mast h1{font-size:clamp(56px,11vw,104px);font-weight:700;letter-spacing:-.04em;line-height:.9;margin-top:10px;}
 .mast h1 .dot{color:var(--stamp);}
 .mast .sub{margin-top:16px;font-size:clamp(15px,1.7vw,18px);color:var(--ink-2);max-width:46ch;margin-inline:auto;}
-.mast .meta{margin-top:18px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink-3);}
-.rule{height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 8px,transparent 8px 16px);margin:8px 0 0;}
+.tabs{display:inline-flex;gap:6px;margin-top:26px;padding:5px;border:1px solid var(--line-2);border-radius:999px;background:color-mix(in srgb,var(--card) 70%,transparent);}
+.tab{font:inherit;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);background:none;border:0;cursor:pointer;padding:9px 18px;border-radius:999px;transition:background .25s,color .25s;}
+.tab.is-on{background:var(--ink);color:var(--paper);}
+.tab .tab-n{opacity:.7;margin-left:4px;}
+.rule{height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 8px,transparent 8px 16px);margin:26px 0 0;}
 
-/* category section */
-.cat{padding:40px 0 8px;}
-.cat-h{display:flex;align-items:baseline;gap:14px;margin-bottom:26px;}
-.cat-h .n{font-family:var(--mono);font-size:12px;color:var(--stamp);letter-spacing:.1em;}
-.cat-h h2{font-size:26px;font-weight:600;letter-spacing:-.01em;}
-.cat-h .c{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:auto;}
-.shelf{display:grid;grid-template-columns:repeat(2,1fr);gap:26px 28px;}
+.cat{padding:38px 0 8px;}
+.cat-h{display:flex;align-items:baseline;gap:14px;margin-bottom:24px;}
+.cat-h .n{font-family:'Space Mono',monospace;font-size:12px;color:var(--stamp);letter-spacing:.1em;}
+.cat-h h2{font-size:25px;font-weight:600;letter-spacing:-.01em;}
+.cat-h .c{font-family:'Space Mono',monospace;font-size:12px;color:var(--ink-3);margin-left:auto;}
+.shelf{display:grid;grid-template-columns:repeat(2,1fr);gap:26px 28px;align-items:start;}
 @media(max-width:720px){.shelf{grid-template-columns:1fr;}}
+.view[hidden]{display:none;}
 
-/* the ticket stub */
-.tk{
-  position:relative;display:block;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;
-  background:transparent;border:0;padding:0;
-  opacity:0;transform:translateY(16px) rotate(var(--tilt,0deg));
-  transition:opacity .7s var(--ease),transform .7s var(--ease),filter .45s var(--ease);
-  -webkit-tap-highlight-color:transparent;
-}
+/* the collapsed stub */
+.tk{position:relative;display:block;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;background:transparent;border:0;padding:0;
+  opacity:0;transform:translateY(16px) rotate(var(--tilt,0deg));transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .55s cubic-bezier(.16,1,.3,1);-webkit-tap-highlight-color:transparent;}
 .tk.seen{opacity:1;transform:translateY(0) rotate(var(--tilt,0deg));}
-.tk:nth-child(odd){--tilt:-1.1deg;}.tk:nth-child(even){--tilt:1deg;}
-.tk-top{
-  position:relative;display:flex;background:var(--card);
-  border-radius:10px;overflow:hidden;
-  box-shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 14px 30px -18px rgba(33,28,21,.5), 0 1px 2px rgba(33,28,21,.12);
-  border:1px solid var(--line-2);
-}
+.tk:nth-child(odd){--tilt:-1deg;}.tk:nth-child(even){--tilt:.9deg;}
+.tk-top{position:relative;display:flex;background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--line-2);
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 14px 30px -18px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.12);transition:box-shadow .45s,border-color .45s;}
 .tk:hover{transform:translateY(-2px) rotate(0deg);}
-.tk:focus-visible{outline:0;}
-.tk:focus-visible .tk-top{outline:2px solid var(--glow);outline-offset:3px;}
-/* glow + straighten on open */
-.tk.is-open{transform:translateY(0) rotate(0deg) scale(1.012);z-index:2;}
-.tk.is-open .tk-top{
-  box-shadow:0 0 0 1px var(--glow-soft), 0 0 34px var(--glow-soft), 0 22px 40px -20px rgba(33,28,21,.55);
-  border-color:var(--glow);
-}
+.tk:focus-visible{outline:0;}.tk:focus-visible .tk-top{outline:2px solid var(--glow);outline-offset:3px;}
+.tk.is-open{transform:translateY(0) rotate(0deg);z-index:3;}
+.tk.is-open .tk-top{box-shadow:0 0 0 1px var(--glow-soft),0 0 36px var(--glow-soft),0 22px 40px -20px rgba(0,0,0,.5);border-color:var(--glow);}
 .tk-body{flex:1;min-width:0;padding:20px 22px;}
-.tk-cat{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--stamp);text-transform:uppercase;}
+.tk-cat{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.2em;color:var(--stamp);text-transform:uppercase;}
 .tk-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:8px;line-height:1.05;}
 .tk-sub{font-size:13px;color:var(--ink-2);margin-top:3px;}
 .tk-venue{font-size:12.5px;color:var(--ink-3);margin-top:14px;line-height:1.4;}
-.tk-date{font-family:var(--mono);font-size:12px;color:var(--ink);margin-top:6px;letter-spacing:.02em;}
-/* perforation */
+.tk-date{font-family:'Space Mono',monospace;font-size:12px;color:var(--ink);margin-top:6px;letter-spacing:.02em;}
 .tk-perf{position:relative;width:0;border-left:2px dashed var(--line);}
 .tk-perf::before,.tk-perf::after{content:"";position:absolute;left:-9px;width:18px;height:18px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line-2);}
 .tk-perf::before{top:-9px;}.tk-perf::after{bottom:-9px;}
-/* stub end */
-.tk-stub{width:120px;flex-shrink:0;padding:18px 16px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(33,28,21,.03),rgba(33,28,21,.06));text-align:center;}
-.tk-admit{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--ink-3);writing-mode:vertical-rl;transform:rotate(180deg);}
-.tk-barcode{flex:1;width:40px;margin:8px 0;align-self:center;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 3px,var(--ink) 3px 4px,transparent 4px 7px);opacity:.78;border-radius:1px;}
-.tk-serial{font-family:var(--mono);font-size:9px;color:var(--ink-2);letter-spacing:.04em;}
-/* the memory, revealed on open */
-.tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--ease);}
-.tk.is-open .tk-note{grid-template-rows:1fr;}
-.tk-note > div{overflow:hidden;}
-.tk-note p{padding:16px 6px 4px;font-size:14.5px;line-height:1.55;color:var(--ink);max-width:54ch;}
-.tk-note .seatline{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--stamp);margin-top:2px;padding:0 6px 2px;}
+.tk-stub{width:116px;flex-shrink:0;padding:18px 14px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(0,0,0,.03),rgba(0,0,0,.07));text-align:center;}
+.tk-admit{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.2em;color:var(--ink-3);writing-mode:vertical-rl;transform:rotate(180deg);}
+.tk-barcode{flex:1;width:38px;margin:8px 0;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 3px,var(--ink) 3px 4px,transparent 4px 7px);opacity:.7;border-radius:1px;}
+.tk-serial{font-family:'Space Mono',monospace;font-size:9px;color:var(--ink-2);letter-spacing:.04em;}
+.tk-flag{position:absolute;top:10px;right:10px;font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper);background:var(--glow);padding:3px 8px;border-radius:999px;}
 
-footer{padding:60px 0 80px;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-3);}
-footer .hint{margin-bottom:18px;color:var(--ink-2);}
-.badge{position:fixed;left:16px;bottom:16px;z-index:40;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);background:var(--card);border:1px solid var(--line);padding:8px 13px;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px -8px rgba(33,28,21,.4);}
+/* expand */
+.tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.16,1,.3,1);margin-top:0;}
+.tk.is-open .tk-note{grid-template-rows:1fr;margin-top:14px;}
+.tk-note > div{overflow:hidden;}
+
+/* recreated original ticket */
+.mtk{background:var(--mtk-bg);color:var(--mtk-ink);border-radius:14px;overflow:hidden;border:1px solid var(--mtk-line);box-shadow:0 18px 40px -22px rgba(0,0,0,.6);}
+.mtk-head{display:flex;gap:16px;padding:18px 18px 14px;position:relative;}
+.mtk-poster{width:74px;height:96px;flex-shrink:0;border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:8px 7px;}
+.mtk-poster-t{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px;line-height:1.05;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);letter-spacing:-.01em;}
+.mtk-trailer{position:absolute;left:0;right:0;bottom:0;background:#e23744;color:#fff;font-family:'Space Mono',monospace;font-size:7.5px;letter-spacing:.08em;text-align:center;padding:2px 0;text-transform:uppercase;}
+.mtk-hi{flex:1;min-width:0;}
+.mtk-title{font-size:18px;font-weight:700;letter-spacing:-.01em;line-height:1.1;}
+.mtk-title .cert{color:var(--mtk-ink-3);font-weight:500;font-size:14px;}
+.mtk-fmt{font-size:12.5px;color:var(--mtk-ink-2);margin-top:6px;}
+.mtk-when{font-size:12.5px;color:var(--mtk-ink-2);margin-top:3px;}
+.mtk-venue{font-size:12px;color:var(--mtk-ink-3);margin-top:3px;}
+.mtk-ml{writing-mode:vertical-rl;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--mtk-ink-3);}
+.mtk-mid{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 16px;padding:14px 18px;border-top:1px dashed var(--mtk-line);border-bottom:1px dashed var(--mtk-line);position:relative;}
+.mtk-mid::before,.mtk-mid::after{content:"";position:absolute;top:-9px;width:18px;height:18px;border-radius:50%;background:var(--mtk-bg);}
+.mtk-mid::before{left:-9px;}.mtk-mid::after{right:-9px;}
+.mtk-facts{min-width:0;}
+.mtk-count{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mtk-ink-3);}
+.mtk-screen{font-size:21px;font-weight:700;letter-spacing:-.01em;margin-top:4px;}
+.mtk-seats{font-family:'Space Mono',monospace;font-size:12.5px;color:var(--glow);margin-top:2px;}
+.mtk-bk{font-family:'Space Mono',monospace;font-size:10px;color:var(--mtk-ink-3);margin-top:10px;letter-spacing:.04em;}
+.mtk-art{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:7px;}
+.mtk-qr{width:74px;height:74px;background:#fff;border-radius:8px;padding:7px;}
+.mtk-qr-svg{width:100%;height:100%;fill:#0a0a0a;shape-rendering:crispEdges;}
+.mtk-live{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--glow);display:flex;align-items:center;gap:5px;text-transform:uppercase;}
+.mtk-dot{width:6px;height:6px;border-radius:50%;background:var(--glow);box-shadow:0 0 8px var(--glow);animation:pulse 1.8s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.mtk-dot{animation:none;}}
+.mtk-stamp{width:96px;height:74px;border:2px solid var(--stamp);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-7deg);color:var(--stamp);}
+.mtk-stamp span{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;}
+.mtk-stamp b{font-family:'Space Mono',monospace;font-size:8.5px;font-weight:400;letter-spacing:.04em;margin-top:2px;opacity:.85;}
+.mtk-foot{display:flex;align-items:baseline;gap:10px;padding:13px 18px;}
+.mtk-foot > span:first-child{font-size:12px;color:var(--mtk-ink-2);}
+.mtk-price{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--mtk-ink);}
+.mtk-via{margin-left:auto;font-family:'Space Mono',monospace;font-size:9.5px;color:var(--mtk-ink-3);letter-spacing:.04em;}
+.mtk-memory{padding:14px 18px 16px;border-top:1px solid var(--mtk-line);}
+.mtk-memory-k{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--glow);}
+.mtk-memory p{font-size:13.5px;line-height:1.55;color:var(--mtk-ink);margin-top:5px;}
+@media(max-width:760px){.mtk-mid{flex-direction:column;align-items:stretch;}.mtk-art{align-items:flex-start;}.mtk-stamp{margin-left:2px;}}
+
+footer{padding:54px 0 90px;text-align:center;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--ink-3);}
+footer .hint{margin-bottom:16px;color:var(--ink-2);}
+.empty{padding:60px 0;text-align:center;color:var(--ink-3);font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.06em;}
+.badge{position:fixed;left:16px;bottom:16px;z-index:40;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);background:var(--card);border:1px solid var(--line);padding:8px 13px;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px -8px rgba(0,0,0,.4);}
 .badge:hover{color:var(--stamp);border-color:var(--glow);}
 """
-A_RENDER = r"""
-  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-  function ticket(t){
-    return '<article class="tk" tabindex="0" role="button" aria-expanded="false" aria-label="'+esc(t.title)+', tap to read the memory">'
-      + '<div class="tk-top">'
-      +   '<div class="tk-body">'
-      +     '<div class="tk-cat">'+esc(t.kind)+'</div>'
-      +     '<div class="tk-title">'+esc(t.title)+'</div>'
-      +     '<div class="tk-sub">'+esc(t.sub)+'</div>'
-      +     '<div class="tk-venue">'+esc(t.venue)+'</div>'
-      +     '<div class="tk-date">'+esc(t.date)+'</div>'
-      +   '</div>'
+
+VINTAGE_RENDER = r"""
+  function stub(t){
+    return '<article class="tk" tabindex="0" role="button" aria-expanded="false" aria-label="'+esc(t.title)+', tap to open the ticket">'
+      + '<div class="tk-top">'+(t.up?'<span class="tk-flag">'+esc(t.countdown||'Upcoming')+'</span>':'')
+      +   '<div class="tk-body"><div class="tk-cat">'+esc(t.kind)+'</div><div class="tk-title">'+esc(t.title)+'</div><div class="tk-sub">'+esc(t.sub)+'</div><div class="tk-venue">'+esc(t.venue)+'</div><div class="tk-date">'+esc(t.date)+'</div></div>'
       +   '<div class="tk-perf" aria-hidden="true"></div>'
       +   '<div class="tk-stub"><div class="tk-admit">Admit One</div><div class="tk-barcode"></div><div class="tk-serial">'+esc(t.serial)+'</div></div>'
       + '</div>'
-      + '<div class="tk-note"><div><div class="seatline">'+esc(t.seat)+'</div><p>'+esc(t.note)+'</p></div></div>'
+      + '<div class="tk-note"><div>'+mticket(t)+'</div></div>'
       + '</article>';
   }
   function render(){
-    var root = document.getElementById('shelf'); var html='';
+    var col = document.getElementById('shelf'); var html='';
     ORDER.forEach(function(cat,i){
-      var items = TICKETS.filter(function(t){return t.cat===cat;});
+      var items = TICKETS.filter(function(t){return t.cat===cat && !t.up;});
       if(!items.length) return;
-      html += '<section class="cat"><div class="wrap"><div class="cat-h"><span class="n">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+' kept</span></div><div class="shelf">'+items.map(ticket).join('')+'</div></div></section>';
+      html += '<section class="cat"><div class="wrap"><div class="cat-h"><span class="n">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+' kept</span></div><div class="shelf">'+items.map(stub).join('')+'</div></div></section>';
     });
-    root.innerHTML = html;
+    col.innerHTML = html;
+    var up = TICKETS.filter(function(t){return t.up;});
+    document.getElementById('upcoming').innerHTML =
+      '<section class="cat"><div class="wrap"><div class="cat-h"><span class="n">&#9733;</span><h2>Upcoming</h2><span class="c">'+up.length+' booked</span></div>'
+      + (up.length ? '<div class="shelf">'+up.map(stub).join('')+'</div>' : '<div class="empty">Nothing booked yet.</div>')
+      + '</div></section>';
   }
 """
-A_BODY = """
+
+VINTAGE_BODY = """
 <header class="mast"><div class="wrap">
   <div class="eye">A shelf for the ones you kept</div>
   <h1>Remember<span class="dot">.</span></h1>
-  <p class="sub">The ticket stubs we used to keep in a drawer. The concert, the film, the match, the night. Tap a stub to light it up and read what it was.</p>
-  <div class="meta">__N__ stubs &middot; 4 shelves &middot; est. 2026</div>
+  <p class="sub">The ticket stubs we used to keep in a drawer. Tap a stub to light it up and pull out the original ticket, and the memory.</p>
+  <div class="tabs" role="tablist" aria-label="Which tickets">
+    <button class="tab is-on" role="tab" aria-selected="true" data-view="collected">Collected</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="upcoming">Upcoming <span class="tab-n">__UP__</span></button>
+  </div>
   <div class="rule"></div>
 </div></header>
-<main id="shelf"></main>
-<footer><div class="wrap"><div class="hint">Tap any stub to remember it.</div>Remember &middot; The Vintage Shelf</div></footer>
-""".replace("__N__", str(len(TICKETS)))
-
-
-# =====================================================================
-# VARIANT B - DARK CINEMA  (near-black, tungsten/marquee gold glow)
-# =====================================================================
-B_FONTS = "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-B_CSS = r"""
-:root{
-  --bg:#0b0b0f; --bg-2:#121218; --card:#15151c; --ink:#f2efe9; --ink-2:rgba(242,239,233,.62);
-  --ink-3:rgba(242,239,233,.40); --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.06);
-  --glow:#ffc864; --glow-2:#ff9d3c; --glow-soft:rgba(255,200,100,.30);
-  --sans:'Space Grotesk',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
-  --ease:cubic-bezier(.16,1,.3,1);
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{
-  background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.5;min-height:100dvh;
-  background-image:radial-gradient(ellipse 70% 50% at 50% -8%, rgba(255,200,100,.06), transparent 60%),radial-gradient(ellipse 90% 60% at 50% 120%, rgba(255,157,60,.05), transparent 60%);
-}
-.skip{position:absolute;left:-999px;}.skip:focus{left:16px;top:16px;background:var(--glow);color:#000;padding:8px 14px;border-radius:8px;z-index:99;}
-.wrap{max-width:1120px;margin:0 auto;padding:0 28px;}
-.mast{padding:84px 0 28px;}
-.mast .eye{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--glow);}
-.mast h1{font-size:clamp(54px,10vw,98px);font-weight:700;letter-spacing:-.04em;line-height:.92;margin-top:12px;}
-.mast h1 .dot{color:var(--glow);text-shadow:0 0 24px var(--glow-soft);}
-.mast .sub{margin-top:16px;font-size:clamp(15px,1.7vw,18px);color:var(--ink-2);max-width:48ch;}
-.mast .meta{margin-top:18px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink-3);}
-
-.cat{padding:44px 0 6px;}
-.cat-h{display:flex;align-items:baseline;gap:14px;margin-bottom:24px;border-top:1px solid var(--line-2);padding-top:22px;}
-.cat-h .n{font-family:var(--mono);font-size:12px;color:var(--glow);}
-.cat-h h2{font-size:24px;font-weight:600;letter-spacing:-.01em;}
-.cat-h .c{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:auto;}
-.shelf{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
-@media(max-width:900px){.shelf{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:620px){.shelf{grid-template-columns:1fr;}}
-
-.tk{
-  position:relative;display:block;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;background:transparent;border:0;padding:0;
-  opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease);-webkit-tap-highlight-color:transparent;
-}
-.tk.seen{opacity:1;transform:none;}
-.tk-top{
-  position:relative;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;
-  transition:border-color .4s var(--ease),box-shadow .4s var(--ease),transform .4s var(--ease);
-}
-.tk:hover .tk-top{transform:translateY(-3px);border-color:rgba(255,200,100,.35);}
-.tk:focus-visible{outline:0;}.tk:focus-visible .tk-top{outline:2px solid var(--glow);outline-offset:3px;}
-/* the signature: a dark stub ignites with marquee gold */
-.tk.is-open .tk-top{
-  border-color:var(--glow);
-  box-shadow:0 0 0 1px var(--glow-soft),0 0 40px -2px var(--glow-soft),0 0 90px -10px rgba(255,200,100,.25),inset 0 1px 0 rgba(255,220,150,.18);
-  transform:translateY(-3px);
-}
-.tk-body{padding:18px 18px 16px;}
-.tk-row{display:flex;align-items:center;justify-content:space-between;}
-.tk-cat{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--glow);text-transform:uppercase;}
-.tk-bulb{width:7px;height:7px;border-radius:50%;background:var(--ink-3);transition:background .4s,box-shadow .4s;}
-.tk.is-open .tk-bulb{background:var(--glow);box-shadow:0 0 10px var(--glow);}
-.tk-title{font-size:21px;font-weight:700;letter-spacing:-.02em;margin-top:12px;line-height:1.05;}
-.tk-sub{font-size:12.5px;color:var(--ink-2);margin-top:3px;}
-.tk-venue{font-size:12px;color:var(--ink-3);margin-top:14px;line-height:1.4;}
-/* perforated divider with marquee notches */
-.tk-tear{position:relative;height:0;border-top:1px dashed var(--line);margin:2px 14px 0;}
-.tk-tear::before,.tk-tear::after{content:"";position:absolute;top:-8px;width:16px;height:16px;border-radius:50%;background:var(--bg);}
-.tk-tear::before{left:-22px;}.tk-tear::after{right:-22px;}
-.tk-foot{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 16px;}
-.tk-date{font-family:var(--mono);font-size:11px;color:var(--ink-2);letter-spacing:.02em;}
-.tk-serial{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);}
-.tk-barcode{height:22px;margin:0 18px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 3px,var(--ink) 3px 4px,transparent 4px 6px);opacity:.18;transition:opacity .4s;}
-.tk.is-open .tk-barcode{opacity:.5;}
-.tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--ease);padding:0 18px;}
-.tk.is-open .tk-note{grid-template-rows:1fr;padding-bottom:16px;}
-.tk-note > div{overflow:hidden;}
-.tk-note .seatline{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--glow);padding-top:14px;}
-.tk-note p{padding-top:6px;font-size:14px;line-height:1.55;color:var(--ink);}
-
-footer{padding:64px 0 90px;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-3);}
-footer .hint{margin-bottom:16px;color:var(--ink-2);}
-.badge{position:fixed;left:16px;bottom:16px;z-index:40;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);background:var(--card);border:1px solid var(--line);padding:8px 13px;border-radius:999px;text-decoration:none;}
-.badge:hover{color:var(--glow);border-color:var(--glow);}
+<main>
+  <div class="view" data-view="collected" id="shelf"></div>
+  <div class="view" data-view="upcoming" id="upcoming" hidden></div>
+</main>
+<footer><div class="wrap"><div class="hint">Tap any stub to open the ticket.</div>Remember &middot; __VFOOT__</div></footer>
 """
-B_RENDER = r"""
-  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-  function ticket(t){
-    return '<article class="tk" tabindex="0" role="button" aria-expanded="false" aria-label="'+esc(t.title)+', tap to light it up">'
-      + '<div class="tk-top">'
-      +   '<div class="tk-body"><div class="tk-row"><span class="tk-cat">'+esc(t.kind)+'</span><span class="tk-bulb"></span></div>'
-      +     '<div class="tk-title">'+esc(t.title)+'</div><div class="tk-sub">'+esc(t.sub)+'</div>'
-      +     '<div class="tk-venue">'+esc(t.venue)+'</div></div>'
-      +   '<div class="tk-tear" aria-hidden="true"></div>'
-      +   '<div class="tk-barcode" aria-hidden="true"></div>'
-      +   '<div class="tk-foot"><span class="tk-date">'+esc(t.date)+'</span><span class="tk-serial">'+esc(t.serial)+'</span></div>'
-      +   '<div class="tk-note"><div><div class="seatline">'+esc(t.seat)+'</div><p>'+esc(t.note)+'</p></div></div>'
-      + '</div></article>';
-  }
-  function render(){
-    var root = document.getElementById('shelf'); var html='';
-    ORDER.forEach(function(cat,i){
-      var items = TICKETS.filter(function(t){return t.cat===cat;});
-      if(!items.length) return;
-      html += '<section class="cat"><div class="wrap"><div class="cat-h"><span class="n">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+'</span></div><div class="shelf">'+items.map(ticket).join('')+'</div></div></section>';
-    });
-    root.innerHTML = html;
-  }
-"""
-B_BODY = """
-<header class="mast"><div class="wrap">
-  <div class="eye">The stubs, in the dark</div>
-  <h1>Remember<span class="dot">.</span></h1>
-  <p class="sub">A dark room of the nights you held on to. Each stub sits unlit until you reach for it. Tap one and it lights up, like the marquee did.</p>
-  <div class="meta">__N__ stubs &middot; 4 reels &middot; tap to light</div>
-</div></header>
-<main id="shelf"></main>
-<footer><div class="wrap"><div class="hint">Tap a stub. Watch it light up.</div>Remember &middot; The Dark Cinema</div></footer>
-""".replace("__N__", str(len(TICKETS)))
 
 
 # =====================================================================
-# VARIANT C - EDITORIAL WALL  (bold off-white, ink, electric accent)
+# VARIANT C - EDITORIAL WALL (keeps its own look, same expand + tabs)
 # =====================================================================
-C_FONTS = "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-C_CSS = r"""
-:root{
-  --bg:#f6f5f2; --card:#ffffff; --ink:#0e0e0f; --ink-2:rgba(14,14,15,.60); --ink-3:rgba(14,14,15,.38);
-  --line:rgba(14,14,15,.12); --line-2:rgba(14,14,15,.07); --accent:#0a3df0; --accent-soft:rgba(10,61,240,.18);
-  --sans:'Space Grotesk',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; --ease:cubic-bezier(.16,1,.3,1);
-}
+C_FONTS = "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap"
+C_CSS = THEME_A.replace(":root{", ":root{ --bg:#f6f5f2; --accent:#0a3df0; --accent-soft:rgba(10,61,240,.16);").replace(
+  "--noise:.05;", "--noise:.05; --ed-ink:#0e0e0f; --ed-line:rgba(14,14,15,.12);") + r"""
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.5;min-height:100dvh;}
-.skip{position:absolute;left:-999px;}.skip:focus{left:16px;top:16px;background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;z-index:99;}
+body{background:var(--bg);color:var(--ed-ink);font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;min-height:100dvh;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.skip{position:absolute;left:-999px;}.skip:focus{left:16px;top:16px;background:var(--ed-ink);color:var(--bg);padding:8px 14px;border-radius:8px;z-index:99;}
 .wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
-/* oversized editorial masthead */
-.mast{padding:60px 0 24px;border-bottom:2px solid var(--ink);}
-.mast .topline{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);}
-.mast h1{font-size:clamp(72px,19vw,260px);font-weight:700;letter-spacing:-.05em;line-height:.82;margin:18px 0 0;}
+.mast{padding:54px 0 22px;border-bottom:2px solid var(--ed-ink);}
+.mast .topline{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(14,14,15,.6);}
+.mast h1{font-size:clamp(70px,18vw,250px);font-weight:700;letter-spacing:-.05em;line-height:.82;margin:16px 0 0;}
 .mast h1 .dot{color:var(--accent);}
-.mast .sub{display:flex;flex-wrap:wrap;gap:14px 30px;justify-content:space-between;align-items:baseline;margin-top:22px;}
-.mast .sub p{font-size:clamp(15px,1.6vw,18px);color:var(--ink-2);max-width:42ch;}
-.mast .sub .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
-
-.cat{padding:48px 0 6px;}
-.cat-h{display:flex;align-items:flex-end;gap:16px;margin-bottom:22px;}
-.cat-h .n{font-family:var(--mono);font-size:13px;color:var(--accent);}
+.mast .sub{display:flex;flex-wrap:wrap;gap:16px 30px;justify-content:space-between;align-items:center;margin-top:20px;}
+.mast .sub p{font-size:clamp(15px,1.6vw,18px);color:rgba(14,14,15,.6);max-width:40ch;}
+.tabs{display:inline-flex;gap:0;border:1px solid var(--ed-ink);border-radius:0;}
+.tab{font:inherit;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ed-ink);background:none;border:0;border-right:1px solid var(--ed-ink);cursor:pointer;padding:11px 18px;}
+.tab:last-child{border-right:0;}
+.tab.is-on{background:var(--accent);color:#fff;}
+.tab .tab-n{opacity:.7;margin-left:4px;}
+.view[hidden]{display:none;}
+.cat{padding:44px 0 6px;}
+.cat-h{display:flex;align-items:flex-end;gap:16px;margin-bottom:20px;}
+.cat-h .n{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);}
 .cat-h h2{font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.03em;text-transform:uppercase;}
-.cat-h .c{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:auto;padding-bottom:8px;}
-.shelf{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--ink);border-left:1px solid var(--line);}
-@media(max-width:860px){.shelf{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:560px){.shelf{grid-template-columns:1fr;}}
-
-/* editorial flat stub cells */
-.tk{
-  position:relative;display:block;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;
-  background:var(--card);border-right:1px solid var(--line);border-bottom:1px solid var(--ink);padding:0;
-  opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease),transform .6s var(--ease),background-color .35s,box-shadow .35s;-webkit-tap-highlight-color:transparent;
-}
+.cat-h .c{font-family:'JetBrains Mono',monospace;font-size:12px;color:rgba(14,14,15,.38);margin-left:auto;padding-bottom:8px;}
+.shelf{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--ed-ink);border-left:1px solid var(--ed-line);}
+@media(max-width:860px){.shelf{grid-template-columns:repeat(2,1fr);}}@media(max-width:560px){.shelf{grid-template-columns:1fr;}}
+.tk{position:relative;display:block;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;background:#fff;border-right:1px solid var(--ed-line);border-bottom:1px solid var(--ed-ink);padding:0;
+  opacity:0;transform:translateY(14px);transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1),background-color .35s,box-shadow .35s;-webkit-tap-highlight-color:transparent;align-self:start;}
 .tk.seen{opacity:1;transform:none;}
 .tk:hover{background:#fff;}
 .tk:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
-.tk.is-open{background:#fff;box-shadow:inset 4px 0 0 var(--accent),0 0 0 1px var(--accent),0 18px 40px -22px var(--accent-soft);z-index:2;}
-.tk-top{padding:20px 20px 16px;}
+.tk.is-open{box-shadow:inset 4px 0 0 var(--accent),0 0 0 1px var(--accent),0 18px 40px -22px var(--accent-soft);z-index:3;}
+.tk-head{padding:20px 20px 16px;}
 .tk-row{display:flex;justify-content:space-between;align-items:baseline;}
-.tk-cat{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);}
-.tk-serial{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);}
+.tk-cat{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);}
+.tk-serial{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:rgba(14,14,15,.38);}
 .tk-title{font-size:clamp(22px,2.5vw,30px);font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:16px;}
-.tk-sub{font-size:13px;color:var(--ink-2);margin-top:6px;}
-.tk-foot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:18px;padding-top:12px;border-top:1px dashed var(--line);}
-.tk-venue{font-size:12px;color:var(--ink-3);line-height:1.35;}
-.tk-date{font-family:var(--mono);font-size:11.5px;color:var(--ink);white-space:nowrap;}
-.tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease);}
+.tk-sub{font-size:13px;color:rgba(14,14,15,.6);margin-top:6px;}
+.tk-foot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:18px;padding-top:12px;border-top:1px dashed var(--ed-line);}
+.tk-venue{font-size:12px;color:rgba(14,14,15,.38);line-height:1.35;}
+.tk-date{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ed-ink);white-space:nowrap;}
+.tk-flag{position:absolute;top:0;right:0;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--accent);padding:4px 9px;}
+.tk-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.16,1,.3,1);}
 .tk.is-open .tk-note{grid-template-rows:1fr;}
 .tk-note > div{overflow:hidden;}
-.tk-note .inner{padding:14px 20px 20px;border-top:1px solid var(--ink);background:linear-gradient(180deg,var(--accent-soft),transparent 70%);}
-.tk-note .seatline{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);}
-.tk-note p{font-size:14.5px;line-height:1.55;color:var(--ink);margin-top:6px;}
-
-footer{padding:60px 0 90px;border-top:2px solid var(--ink);margin-top:50px;}
-footer .in{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-3);}
-footer .hint{color:var(--ink);}
-.badge{position:fixed;left:16px;bottom:16px;z-index:40;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--bg);background:var(--ink);padding:9px 14px;border-radius:999px;text-decoration:none;}
-.badge:hover{background:var(--accent);}
+.tk-note .pad{padding:14px;border-top:1px solid var(--ed-ink);background:linear-gradient(180deg,var(--accent-soft),transparent 60%);}
+/* reuse the same recreated ticket panel, dark, inside the editorial cell */
+.mtk{background:#101014;color:#f3ead8;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.1);box-shadow:0 18px 40px -22px rgba(0,0,0,.6);--glow:#5b8cff;--stamp:var(--accent);--mtk-ink:#f3f1ec;--mtk-ink-2:rgba(243,241,236,.6);--mtk-ink-3:rgba(243,241,236,.4);--mtk-line:rgba(255,255,255,.1);--mtk-bg:#101014;}
+.mtk-head{display:flex;gap:16px;padding:18px 18px 14px;}
+.mtk-poster{width:74px;height:96px;flex-shrink:0;border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:8px 7px;}
+.mtk-poster-t{font-weight:700;font-size:11px;line-height:1.05;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);}
+.mtk-trailer{position:absolute;left:0;right:0;bottom:0;background:#e23744;color:#fff;font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.08em;text-align:center;padding:2px 0;text-transform:uppercase;}
+.mtk-hi{flex:1;min-width:0;}.mtk-title{font-size:18px;font-weight:700;letter-spacing:-.01em;line-height:1.1;}.mtk-title .cert{color:var(--mtk-ink-3);font-weight:500;font-size:14px;}
+.mtk-fmt,.mtk-when{font-size:12.5px;color:var(--mtk-ink-2);margin-top:4px;}.mtk-venue{font-size:12px;color:var(--mtk-ink-3);margin-top:3px;}
+.mtk-ml{writing-mode:vertical-rl;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--mtk-ink-3);}
+.mtk-mid{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 16px;padding:14px 18px;border-top:1px dashed var(--mtk-line);border-bottom:1px dashed var(--mtk-line);position:relative;}
+.mtk-mid::before,.mtk-mid::after{content:"";position:absolute;top:-9px;width:18px;height:18px;border-radius:50%;background:var(--mtk-bg);}.mtk-mid::before{left:-9px;}.mtk-mid::after{right:-9px;}
+.mtk-count{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mtk-ink-3);}
+.mtk-screen{font-size:21px;font-weight:700;margin-top:4px;}.mtk-seats{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--glow);margin-top:2px;}
+.mtk-bk{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mtk-ink-3);margin-top:10px;}
+.mtk-art{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:7px;}
+.mtk-qr{width:74px;height:74px;background:#fff;border-radius:8px;padding:7px;}.mtk-qr-svg{width:100%;height:100%;fill:#0a0a0a;shape-rendering:crispEdges;}
+.mtk-live{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--glow);display:flex;align-items:center;gap:5px;text-transform:uppercase;}
+.mtk-dot{width:6px;height:6px;border-radius:50%;background:var(--glow);box-shadow:0 0 8px var(--glow);animation:pulse 1.8s ease-in-out infinite;}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}@media(prefers-reduced-motion:reduce){.mtk-dot{animation:none;}}
+.mtk-stamp{width:96px;height:74px;border:2px solid var(--stamp);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-7deg);color:var(--stamp);}
+.mtk-stamp span{font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;}.mtk-stamp b{font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:400;margin-top:2px;opacity:.85;}
+.mtk-foot{display:flex;align-items:baseline;gap:10px;padding:13px 18px;}.mtk-foot>span:first-child{font-size:12px;color:var(--mtk-ink-2);}.mtk-price{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;}.mtk-via{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--mtk-ink-3);}
+.mtk-memory{padding:14px 18px 16px;border-top:1px solid var(--mtk-line);}.mtk-memory-k{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--glow);}.mtk-memory p{font-size:13.5px;line-height:1.55;color:var(--mtk-ink);margin-top:5px;}
+@media(max-width:760px){.mtk-mid{flex-direction:column;align-items:stretch;}.mtk-art{align-items:flex-start;}.mtk-stamp{margin-left:2px;}}
+footer{padding:54px 0 90px;border-top:2px solid var(--ed-ink);margin-top:40px;}
+footer .in{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:rgba(14,14,15,.38);}
+.empty{padding:50px 20px;text-align:center;font-family:'JetBrains Mono',monospace;color:rgba(14,14,15,.38);}
+.badge{position:fixed;left:16px;bottom:16px;z-index:40;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--bg);background:var(--ed-ink);padding:9px 14px;border-radius:999px;text-decoration:none;}.badge:hover{background:var(--accent);}
 """
 C_RENDER = r"""
-  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-  function ticket(t){
-    return '<article class="tk" tabindex="0" role="button" aria-expanded="false" aria-label="'+esc(t.title)+', tap to read the memory">'
-      + '<div class="tk-top"><div class="tk-row"><span class="tk-cat">'+esc(t.kind)+'</span><span class="tk-serial">'+esc(t.serial)+'</span></div>'
+  function stub(t){
+    return '<article class="tk" tabindex="0" role="button" aria-expanded="false" aria-label="'+esc(t.title)+', tap to open the ticket">'
+      + (t.up?'<span class="tk-flag">'+esc(t.countdown||'Upcoming')+'</span>':'')
+      + '<div class="tk-head"><div class="tk-row"><span class="tk-cat">'+esc(t.kind)+'</span><span class="tk-serial">'+esc(t.serial)+'</span></div>'
       +   '<div class="tk-title">'+esc(t.title)+'</div><div class="tk-sub">'+esc(t.sub)+'</div>'
       +   '<div class="tk-foot"><span class="tk-venue">'+esc(t.venue)+'</span><span class="tk-date">'+esc(t.date)+'</span></div></div>'
-      + '<div class="tk-note"><div><div class="inner"><div class="seatline">'+esc(t.seat)+'</div><p>'+esc(t.note)+'</p></div></div></div>'
+      + '<div class="tk-note"><div><div class="pad">'+mticket(t)+'</div></div></div>'
       + '</article>';
   }
   function render(){
-    var root = document.getElementById('shelf'); var html='';
+    var col = document.getElementById('shelf'); var html='';
     ORDER.forEach(function(cat,i){
-      var items = TICKETS.filter(function(t){return t.cat===cat;});
+      var items = TICKETS.filter(function(t){return t.cat===cat && !t.up;});
       if(!items.length) return;
-      html += '<section class="cat"><div class="wrap"><div class="cat-h"><span class="n">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+' stubs</span></div><div class="shelf">'+items.map(ticket).join('')+'</div></div></section>';
+      html += '<section class="cat"><div class="wrap"><div class="cat-h"><span class="n">0'+(i+1)+'</span><h2>'+cat+'</h2><span class="c">'+items.length+' stubs</span></div><div class="shelf">'+items.map(stub).join('')+'</div></div></section>';
     });
-    root.innerHTML = html;
+    col.innerHTML = html;
+    var up = TICKETS.filter(function(t){return t.up;});
+    document.getElementById('upcoming').innerHTML =
+      '<section class="cat"><div class="wrap"><div class="cat-h"><span class="n">&#9733;</span><h2>Upcoming</h2><span class="c">'+up.length+' booked</span></div>'
+      + (up.length ? '<div class="shelf">'+up.map(stub).join('')+'</div>' : '<div class="empty">Nothing booked yet.</div>')
+      + '</div></section>';
   }
 """
 C_BODY = """
 <header class="mast"><div class="wrap">
   <div class="topline"><span>The keepsake index</span><span>Bengaluru &middot; MMXXVI</span></div>
   <h1>Remember<span class="dot">.</span></h1>
-  <div class="sub"><p>A wall of the stubs you never threw away. Set in type, filed by kind. Tap any one to pull the memory out of it.</p><span class="tag">__N__ stubs &middot; tap to expand</span></div>
+  <div class="sub"><p>A wall of the stubs you never threw away. Tap any one to pull out the original ticket and the memory.</p>
+  <div class="tabs" role="tablist" aria-label="Which tickets"><button class="tab is-on" role="tab" aria-selected="true" data-view="collected">Collected</button><button class="tab" role="tab" aria-selected="false" data-view="upcoming">Upcoming <span class="tab-n">__UP__</span></button></div></div>
 </div></header>
-<main id="shelf"></main>
-<footer><div class="wrap in"><span class="hint">Tap a stub to read it.</span><span>Remember &middot; The Editorial Wall</span></div></footer>
-""".replace("__N__", str(len(TICKETS)))
+<main>
+  <div class="view" data-view="collected" id="shelf"></div>
+  <div class="view" data-view="upcoming" id="upcoming" hidden></div>
+</main>
+<footer><div class="wrap in"><span>Tap a stub to read it.</span><span>Remember &middot; The Editorial Wall</span></div></footer>
+"""
 
-
-# =====================================================================
-# CHOOSER
-# =====================================================================
+# ---- chooser ----
 CHOOSER = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Remember - three directions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono&display=swap"/>
 <style>
-:root{--bg:#101014;--ink:#f3f1ec;--ink-2:rgba(243,241,236,.6);--ink-3:rgba(243,241,236,.4);--line:rgba(255,255,255,.1);--accent:#ffc864;--ease:cubic-bezier(.16,1,.3,1);--sans:'Space Grotesk',sans-serif;--mono:'Space Mono',monospace;}
-*{box-sizing:border-box;margin:0;}body{background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100dvh;display:grid;place-items:center;padding:56px 24px;-webkit-font-smoothing:antialiased;}
-.lab{width:100%;max-width:760px;}
-.k{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);}
-h1{font-size:clamp(36px,7vw,60px);font-weight:700;letter-spacing:-.03em;line-height:.95;margin:14px 0 0;}
-h1 .d{color:var(--accent);}
-.lead{color:var(--ink-2);margin-top:14px;max-width:54ch;line-height:1.6;}
+:root{--bg:#15120d;--ink:#f2e9d6;--ink-2:rgba(242,233,214,.6);--ink-3:rgba(242,233,214,.4);--line:rgba(242,233,214,.12);--glow:#eaa54a;--ease:cubic-bezier(.16,1,.3,1);}
+*{box-sizing:border-box;margin:0;}body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',sans-serif;min-height:100dvh;display:grid;place-items:center;padding:56px 24px;-webkit-font-smoothing:antialiased;}
+.lab{width:100%;max-width:760px;}.k{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);}
+h1{font-size:clamp(36px,7vw,60px);font-weight:700;letter-spacing:-.03em;line-height:.95;margin:14px 0 0;}h1 .d{color:var(--glow);}
+.lead{color:var(--ink-2);margin-top:14px;max-width:56ch;line-height:1.6;}
 .opts{display:grid;gap:13px;margin-top:34px;}
 .o{display:grid;grid-template-columns:30px 1fr auto;gap:18px;align-items:center;padding:22px 24px;border:1px solid var(--line);border-radius:16px;text-decoration:none;color:inherit;background:rgba(255,255,255,.02);transition:border-color .25s var(--ease),background .25s var(--ease),transform .25s var(--ease);}
-.o:hover{border-color:var(--accent);background:rgba(255,200,100,.06);transform:translateY(-2px);}
-.o .l{font-family:var(--mono);font-size:22px;color:var(--accent);}
-.o .nm{display:block;font-weight:600;font-size:17px;}
-.o .ds{display:block;color:var(--ink-2);font-size:13.5px;margin-top:4px;line-height:1.5;}
-.o .go{font-family:var(--mono);font-size:13px;color:var(--ink-3);}
-.o:hover .go{color:var(--accent);}
+.o:hover{border-color:var(--glow);background:rgba(234,165,74,.06);transform:translateY(-2px);}
+.o .l{font-family:'Space Mono',monospace;font-size:22px;color:var(--glow);}.o .nm{display:block;font-weight:600;font-size:17px;}.o .ds{display:block;color:var(--ink-2);font-size:13.5px;margin-top:4px;line-height:1.5;}
+.o .go{font-family:'Space Mono',monospace;font-size:13px;color:var(--ink-3);}.o:hover .go{color:var(--glow);}
 @media(max-width:560px){.o{grid-template-columns:24px 1fr;}.o .go{display:none;}}
-.foot{margin-top:30px;font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.06em;}
+.foot{margin-top:30px;font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-3);letter-spacing:.06em;}
 </style></head><body>
 <main class="lab">
   <div class="k">Remember &middot; design directions</div>
   <h1>Three ways to keep a stub<span class="d">.</span></h1>
-  <p class="lead">A one-page shelf for the ticket stubs you held on to, segregated by kind. Same memories in each, three different feelings. Open one, tap a stub to light it up, and pick the one that feels like Remember.</p>
+  <p class="lead">A one-page shelf for the ticket stubs you held on to, filed by kind, with an Upcoming tab for what's next. Tap a stub to light it up and pull out the original ticket. Same memories in each, three feelings.</p>
   <nav class="opts">
-    <a class="o" href="variant-a-shelf.html"><span class="l">A</span><span><span class="nm">The Vintage Shelf</span><span class="ds">Warm paper, torn stubs on a tilt, a soft amber glow. The drawer you kept them in.</span></span><span class="go">open -&gt;</span></a>
-    <a class="o" href="variant-b-cinema.html"><span class="l">B</span><span><span class="nm">The Dark Cinema</span><span class="ds">Near-black room, each stub unlit until you tap it, then it ignites like a marquee.</span></span><span class="go">open -&gt;</span></a>
+    <a class="o" href="variant-a-shelf.html"><span class="l">A</span><span><span class="nm">The Vintage Shelf, light</span><span class="ds">Warm paper, torn stubs on a tilt, a soft amber glow. The drawer you kept them in.</span></span><span class="go">open -&gt;</span></a>
+    <a class="o" href="variant-b-shelf-dark.html"><span class="l">B</span><span><span class="nm">The Vintage Shelf, dark</span><span class="ds">The same shelf after dark. Same stubs, same glow, on warm near-black.</span></span><span class="go">open -&gt;</span></a>
     <a class="o" href="variant-c-editorial.html"><span class="l">C</span><span><span class="nm">The Editorial Wall</span><span class="ds">Oversized type, a filed grid, electric accent. The stubs as a printed index.</span></span><span class="go">open -&gt;</span></a>
   </nav>
-  <p class="foot">Built with Space Grotesk &middot; tap-to-glow is the only interaction</p>
+  <p class="foot">Built with Space Grotesk &middot; tap a stub to open the ticket</p>
 </main></body></html>
 """
 
 def main():
+    n_up = str(len([t for t in TICKETS if t.get("up")]))
+    a_body = VINTAGE_BODY.replace("__UP__", n_up).replace("__VFOOT__", "The Vintage Shelf, light")
+    b_body = VINTAGE_BODY.replace("__UP__", n_up).replace("__VFOOT__", "The Vintage Shelf, dark")
+    c_body = C_BODY.replace("__UP__", n_up)
     io.open(os.path.join(ROOT, "variant-a-shelf.html"), "w", encoding="utf-8").write(
-        page("- The Vintage Shelf", "A", "#efe7d6", A_FONTS, A_CSS, A_BODY, A_RENDER))
-    io.open(os.path.join(ROOT, "variant-b-cinema.html"), "w", encoding="utf-8").write(
-        page("- The Dark Cinema", "B", "#0b0b0f", B_FONTS, B_CSS, B_BODY, B_RENDER))
+        page("- The Vintage Shelf", "A", "#efe7d6", VINTAGE_FONTS, THEME_A + VINTAGE_CSS, a_body, VINTAGE_RENDER))
+    io.open(os.path.join(ROOT, "variant-b-shelf-dark.html"), "w", encoding="utf-8").write(
+        page("- The Vintage Shelf, Dark", "B", "#15120d", VINTAGE_FONTS, THEME_B + VINTAGE_CSS, b_body, VINTAGE_RENDER))
     io.open(os.path.join(ROOT, "variant-c-editorial.html"), "w", encoding="utf-8").write(
-        page("- The Editorial Wall", "C", "#f6f5f2", C_FONTS, C_CSS, C_BODY, C_RENDER))
+        page("- The Editorial Wall", "C", "#f6f5f2", C_FONTS, C_CSS, c_body, C_RENDER))
     io.open(os.path.join(ROOT, "index.html"), "w", encoding="utf-8").write(CHOOSER)
-    print("built: variant-a-shelf.html, variant-b-cinema.html, variant-c-editorial.html, index.html")
+    # remove the retired filename if present
+    old = os.path.join(ROOT, "variant-b-cinema.html")
+    if os.path.exists(old): os.remove(old)
+    print("built: variant-a-shelf.html, variant-b-shelf-dark.html, variant-c-editorial.html, index.html")
 
 if __name__ == "__main__":
     main()
