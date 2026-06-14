@@ -718,7 +718,8 @@ async function scanTicket(blob){
   try{
     dropStatus('Reading your ticket…');
     var T=await loadTesseract();
-    var r=await T.recognize(blob,'eng',{logger:function(m){if(m.status==='recognizing text'){dropStatus('Reading your ticket… '+Math.round((m.progress||0)*100)+'%');}}});
+    var img=await preprocessForOCR(blob);
+    var r=await T.recognize(img,'eng',{logger:function(m){if(m.status==='recognizing text'){dropStatus('Reading your ticket… '+Math.round((m.progress||0)*100)+'%');}}});
     var text=(r&&r.data&&r.data.text)||'';
     var n=fillFromText(text);
     if(n)dropStatus('Filled '+n+' field'+(n===1?'':'s')+', please check',{done:true,hide:3200});
@@ -727,30 +728,49 @@ async function scanTicket(blob){
 }
 function setIfEmpty(id,val){if(val==null)return 0;val=String(val).trim();if(!val)return 0;var el=document.getElementById(id);if(el&&!el.value.trim()){el.value=val;return 1;}return 0;}
 function toISO(d,mon,yr){var M={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};var mm=M[mon.toLowerCase().slice(0,3)];if(!mm)return null;var y=yr||String(new Date().getFullYear());return y+'-'+mm+'-'+('0'+d).slice(-2);}
+var MON='Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec';
+function extractDate(text){var m;
+  if((m=text.match(new RegExp('\\b(\\d{1,2})\\s+('+MON+')[a-z]*\\.?\\s*(\\d{4})?\\b','i'))))return toISO(m[1],m[2],m[3]);
+  if((m=text.match(new RegExp('\\b('+MON+')[a-z]*\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s*(\\d{4})?\\b','i'))))return toISO(m[2],m[1],m[3]);
+  if((m=text.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/))){var d=+m[1],mo=+m[2],y=m[3];if(d<=31&&mo<=12){y=y.length===2?'20'+y:y;return y+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);}}
+  if((m=text.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/)))return m[1]+'-'+m[2]+'-'+m[3];
+  return undefined;}
+function cleanTitle(l){return l.replace(/\s*[\(\[]\s*(U\/?A(?:\s*\d{1,2}\+?)?|UA|U|A)\s*[\)\]]\s*$/i,'').replace(/\s*[-–|:]\s*$/,'').trim();}
+var TSKIP=/^(m-?ticket|e-?ticket|mobile ticket|watch trailer|tap (for|to)|view |get directions|directions|cancellation|cancel|contact|support|booking|order|sub-?total|subtotal|convenience|gst|tax|total|amount|paid|seat|seats|screen|audi|hall|row|qty|quantity|tickets?|valid|show ?time|duration|language|format|english|hindi|tamil|telugu|kannada|malayalam|punjabi|bengali|marathi|gujarati|qr[- ]|pr-|₹|rs\.?|inr|scan|powered|terms|date|time|venue|address|www\.|http|©|all rights|pvr|inox|cinepolis|cinema|bookmyshow|book my show|district|insider|paytm|ticketmaster|zomato|payment|paid via|upi|net banking)/i;
+function extractTitle(lines,f){
+  function ok(l){return /[A-Za-z]/.test(l)&&l.replace(/[^A-Za-z]/g,'').length>=2&&l.length<52&&!TSKIP.test(l)&&!/^\d+\s/.test(l)&&l!==f.venue;}
+  if(f.format){var key=f.format.split(',')[0].toLowerCase(),fi=-1;for(var i=0;i<lines.length;i++){if(lines[i].toLowerCase().indexOf(key)>=0){fi=i;break;}}for(var j=fi-1;j>=0&&fi>=0;j--){if(ok(lines[j]))return cleanTitle(lines[j]);}}
+  var t=lines.find(ok);return t?cleanTitle(t):undefined;}
 function parseTicket(raw){
   var f={};if(!raw)return f;
-  var lines=raw.split(/\n+/).map(function(l){return l.replace(/\s+/g,' ').trim();}).filter(Boolean);
-  var text=lines.join('\n');var m;
-  if((m=text.match(/booking\s*id[:\s.]*([A-Z0-9]{4,})/i)))f.bookingId=m[1].toUpperCase();
-  if((m=text.match(/(?:total\s*amount|amount\s*paid|grand\s*total|total)\D{0,5}(\d[\d,]+(?:\.\d{1,2})?)/i))||(m=text.match(/₹\s*([\d,]+(?:\.\d{1,2})?)/)))f.price='₹'+m[1].replace(/,$/,'');
-  if((m=text.match(/(\d{1,2})\s*ticket/i)))f.count=m[1]+' Ticket'+(m[1]==='1'?'':'s');
-  if((m=text.match(/(\d{1,2}:\d{2}\s*[AP]\.?M)/i)))f.time=m[1].toUpperCase().replace(/\s+/g,' ').replace('.','');
-  if((m=text.match(/\b(English|Hindi|Tamil|Telugu|Kannada|Malayalam|Punjabi|Bengali|Marathi)\b\s*,?\s*(IMAX\s*3?D?|4DX|[234]D|70\s?mm)?/i))){f.format=m[0].replace(/\s+/g,' ').trim();f.cat='Movies';}
-  if((m=text.match(/\b(AUDI(?:TORIUM)?|SCREEN)\s*[:#]?\s*([A-Z0-9]{1,4})\b/i)))f.screen=(m[1].toUpperCase().replace('AUDITORIUM','AUDI')+' '+m[2].toUpperCase()).trim();
-  var vline=lines.find(function(l){return /\b(PVR|INOX|Cinepolis|Carnival|Miraj|Cinemas|stadium|arena|grounds|auditorium|race\s?course|lawns|maidan)\b/i.test(l)&&l.length<70;});
-  if(vline){f.venue=vline.replace(/[|·]+\s*$/,'').trim();if(/PVR|INOX|Cinepolis|Cinemas/i.test(vline))f.cat=f.cat||'Movies';else if(/stadium|arena|grounds|maidan/i.test(vline))f.cat=f.cat||'Events';}
-  if(/bookmyshow/i.test(text))f.provider='BookMyShow';else if(/\bpvr\b/i.test(text))f.provider='PVR';else if(/inox/i.test(text))f.provider='INOX';else if(/district|zomato/i.test(text))f.provider='District';else if(/insider|paytm/i.test(text))f.provider='Insider';
-  var sm=text.match(/\b([A-Z]{0,3}-?[A-Z]?\d{1,3}(?:\s*,\s*[A-Z]{0,3}-?[A-Z]?\d{1,3}){1,9})\b/);
-  if(sm)f.seats=sm[1].replace(/\s*,\s*/g,', ');
-  var dm=text.match(/\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*(\d{4})?\b/i);
-  if(dm){var iso=toISO(dm[1],dm[2],dm[3]);if(iso)f.date=iso;}
-  var skip=/^(m-?ticket|watch trailer|tap (for|to)|cancellation|booking|total|amount|seat|screen|audi|english|hindi|tamil|telugu|kannada|qr[- ]|pr-|₹|rs\.?|\d|cancel|contact|support)/i;
-  var tline=lines.find(function(l){return /[A-Za-z]/.test(l)&&l.length>1&&l.length<46&&!skip.test(l);});
-  if(tline)f.title=tline.replace(/\s*\(([AU]{1,2}|UA)\)\s*$/i,'').trim();
+  var norm=raw.replace(/￥/g,'₹');
+  var lines=norm.split(/\n+/).map(function(l){return l.replace(/\s+/g,' ').trim();}).filter(function(l){return l.length>0;});
+  var text=lines.join('\n'),lc=text.toLowerCase(),m;
+  if((m=text.match(/b[o0]{1,2}k[il1]ng\s*[il1]?[d0o]?[\s:#.]*([A-Z0-9]{5,})/i))||(m=text.match(/\b(?:ref|order|confirmation)\s*(?:id|no\.?|number|#)?[\s:#.]*([A-Z0-9]{6,})/i)))f.bookingId=m[1].toUpperCase();
+  var amtRes=[/(?:total\s*amount|amount\s*paid|grand\s*total|order\s*total|net\s*payable|net\s*amount)\s*[:\-]?\s*[₹rzs%i.\s]{0,4}(\d[\d,]{1,}(?:\.\d{1,2})?)/i,/(?:₹|rs\.?|inr)\s*(\d[\d,]{1,}(?:\.\d{1,2})?)/i,/\b(?:total|paid|amount)\s*[:\-]?\s*[₹rzs%i.\s]{0,4}(\d[\d,]{2,}(?:\.\d{1,2})?)/i];
+  for(var a=0;a<amtRes.length;a++){if((m=text.match(amtRes[a]))){f.price='₹'+m[1].replace(/,$/,'');break;}}
+  if((m=text.match(/(\d{1,2})\s*(?:x\s*)?ticket/i)))f.count=m[1]+' Ticket'+(m[1]==='1'?'':'s');
+  if((m=text.match(/\b(\d{1,2})[:.](\d{2})\s*([AP])\.?M\b/i)))f.time=(+m[1])+':'+m[2]+' '+m[3].toUpperCase()+'M';else if((m=text.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*[ap]\.?m)/i)))f.time=m[1]+':'+m[2];
+  if((m=text.match(/\b(English|Hindi|Tamil|Telugu|Kannada|Malayalam|Punjabi|Bengali|Marathi|Gujarati)\b\s*[,\-|]?\s*((?:IMAX\s*)?(?:3D|2D|4DX|ICE|MX4D|Dolby|70\s?mm)?)/i))){f.format=(m[1]+(m[2]&&m[2].trim()?', '+m[2].toUpperCase().replace(/\s+/g,' ').trim():'')).replace(/,\s*$/,'');f.cat='Movies';}
+  else if((m=text.match(/\b(IMAX(?:\s*3D|\s*2D)?|4DX|2D|3D)\b/i))&&/\b(pvr|inox|cinepolis|cinema|audi|screen)\b/i.test(lc)){f.format=m[1].toUpperCase();f.cat='Movies';}
+  if((m=text.match(/\b(AUDI(?:TORIUM)?|SCREEN|HALL)\s*[:#]?\s*([A-Z0-9]{1,4})\b/i)))f.screen=(m[1].toUpperCase().replace('AUDITORIUM','AUDI')+' '+m[2].toUpperCase()).trim();
+  var venueRe=/\b(PVR|INOX|Cinepolis|Carnival|Miraj|Movietime|Mukta|Wave|Delite|SRS|Rajhans|Asian|Cinemas?|Multiplex|stadium|arena|grounds?|maidan|auditorium|race\s?course|lawns?|gardens?|amphitheatre|amphitheater|dome|convention|palace|\bpark\b|resort|farms?|\bclub\b|\bhall\b|centre|center|expo|turf)\b/i;
+  var vline=lines.find(function(l){return venueRe.test(l)&&l.length<=72&&/[a-z]/i.test(l)&&!/^(?:imax|2d|3d|4dx)\b/i.test(l);});
+  if(vline)f.venue=vline.replace(/^[•\-\s]+/,'').replace(/[|·,\-\s]+$/,'').trim();
+  if(/bookmyshow|book\s?my\s?show|\bbms\b/i.test(lc))f.provider='BookMyShow';else if(/\bpvr\b/i.test(lc))f.provider='PVR';else if(/inox/i.test(lc))f.provider='INOX';else if(/cinepolis/i.test(lc))f.provider='Cinepolis';else if(/district|zomato/i.test(lc))f.provider='District';else if(/insider|paytm/i.test(lc))f.provider='Insider';else if(/ticketmaster/i.test(lc))f.provider='Ticketmaster';
+  var sm=text.match(/\b([A-Z]{1,3}-?[A-Z]?\d{1,4}(?:\s*,\s*[A-Z]{0,3}-?[A-Z]?\d{1,4}){1,12})\b/);
+  if(!sm)sm=text.match(/\bseats?\s*[:\-]?\s*([A-Z0-9,\-\s]{2,40}\d)/i);
+  if(sm)f.seats=sm[1].replace(/\s*,\s*/g,', ').replace(/\s+/g,' ').trim();
+  if(!f.seats){var bm=text.match(/\b(?:block|section|stand|row|gate|tier)\s+[A-Z]?\d{1,4}[A-Z]?\b/i);if(bm)f.seats=bm[0].replace(/\s+/g,' ');}
+  f.date=extractDate(text);
+  if((m=text.match(/\(\s*(U\/?A(?:\s*\d{1,2}\+?)?|UA|U|A)\s*\)/i)))f.cert=m[1].toUpperCase().replace(/\s+/g,'');
+  f.title=extractTitle(lines,f);
   if(!f.cat){
-    if(/\b(vs|v\/s|ipl|world cup|t20|odi|test match|premier league|\bfc\b|cricket|football|grand prix|wrestling)\b/i.test(text))f.cat='Events';
-    else if(/\b(live in concert|in concert|concert|tour|unplugged|symphony|the weeknd|gig)\b/i.test(text))f.cat='Concerts';
-    else if(/\b(stand-?up|comedy|festival|weekender|open mic|theatre|play|musical)\b/i.test(text))f.cat='One-off';
+    if(/\b(live in concert|in concert|concert|world tour|tour|unplugged|symphony|gig)\b/i.test(lc)&&!/\bcinema|pvr|inox\b/i.test(lc))f.cat='Concerts';
+    else if(/\b(vs|v\/s|versus|ipl|t20|odi|test match|world cup|premier league|\bfc\b|cricket|football|hockey|kabaddi|grand prix|wrestling|\bmatch\b)\b/i.test(lc))f.cat='Events';
+    else if(/\b(stand-?up|comedy|festival|weekender|open mic|theatre|theater|\bplay\b|musical|drama|exhibition|workshop)\b/i.test(lc))f.cat='One-off';
+    else if(/stadium|arena|grounds?|maidan|turf/i.test(lc))f.cat='Events';
+    else if(/cinema|multiplex|pvr|inox|cinepolis/i.test(lc))f.cat='Movies';
   }
   return f;
 }
@@ -780,6 +800,23 @@ function downscale(file){return new Promise(function(res,rej){
   img.onerror=function(){URL.revokeObjectURL(url);rej(new Error('image load failed'));};
   img.src=url;
 });}
+/* grayscale + contrast + upscale small images, to lift OCR accuracy */
+function preprocessForOCR(blob){return new Promise(function(res){
+  try{
+    var img=new Image(),url=URL.createObjectURL(blob);
+    img.onload=function(){
+      var w=img.width,h=img.height,maxd=Math.max(w,h),scale=maxd<1500?Math.min(2,1500/maxd):1;
+      var cw=Math.round(w*scale),ch=Math.round(h*scale);
+      var c=document.createElement('canvas');c.width=cw;c.height=ch;var ctx=c.getContext('2d');
+      ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,cw,ch);
+      URL.revokeObjectURL(url);
+      try{var d=ctx.getImageData(0,0,cw,ch),p=d.data;for(var i=0;i<p.length;i+=4){var g=0.299*p[i]+0.587*p[i+1]+0.114*p[i+2];g=(g-128)*1.25+128;g=g<0?0:g>255?255:g;p[i]=p[i+1]=p[i+2]=g;}ctx.putImageData(d,0,0);}catch(e){}
+      res(c);
+    };
+    img.onerror=function(){URL.revokeObjectURL(url);res(blob);};
+    img.src=url;
+  }catch(e){res(blob);}
+});}
 
 /* ---------- bulk import: read & classify many at once ---------- */
 var _worker=null, batchDrafts=[], _bthumbs=[];
@@ -803,7 +840,7 @@ async function openBatch(files){
     prog.innerHTML='<span class="spin"></span>Reading '+(i+1)+' of '+files.length+'…';
     var blob;try{blob=await downscale(files[i]);}catch(e){blob=files[i];}
     var fields={};
-    if(worker){try{var r=await worker.recognize(blob);fields=parseTicket(r.data.text);}catch(e){}}
+    if(worker){try{var pp=await preprocessForOCR(blob);var r=await worker.recognize(pp);fields=parseTicket(r.data.text);}catch(e){}}
     var draft={photo:blob,f:fields};batchDrafts.push(draft);
     addBatchRow(draft);
   }
