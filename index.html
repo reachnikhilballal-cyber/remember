@@ -269,6 +269,12 @@ body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden;}
 .drop-status .ok{display:none;flex-shrink:0;}
 .drop-status.done .ok{display:block;color:#7ddc8f;}
 @keyframes spin{to{transform:rotate(360deg)}}
+.linkrow{display:flex;gap:8px;margin-top:14px;}
+.linkrow[hidden]{display:none;}
+.linkrow input{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--ink);background:var(--field);border:1px solid var(--field-line);border-radius:11px;padding:10px 13px;outline:none;}
+.linkrow input:focus{border-color:var(--glow);}
+.linkrow button{flex-shrink:0;font:inherit;font-size:13px;font-weight:600;color:#15120d;background:var(--glow);border:0;border-radius:11px;padding:0 16px;cursor:pointer;}
+.linkrow button:disabled{opacity:.6;cursor:default;}
 .field{margin-top:14px;}
 .field label{display:block;font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px;}
 .field label .req{color:var(--stamp);}
@@ -403,6 +409,11 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
       <div class="drop-status" id="dropStatus"><span class="spin"></span><svg class="ok" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg><span id="dropStatusText"></span></div>
     </label>
 
+    <div class="linkrow" id="linkRow" hidden>
+      <input id="linkInput" type="url" inputmode="url" autocomplete="off" placeholder="Or paste a ticket or event link" aria-label="Paste a ticket or event link" />
+      <button id="linkRead" type="button">Read</button>
+    </div>
+
     <div class="field"><label for="f-title">Title <span class="req">*</span></label><input id="f-title" required placeholder="Coldplay, Oppenheimer, RCB vs CSK…" /></div>
     <div class="grid2">
       <div class="field"><label for="f-cat">Shelf <span class="req">*</span></label><select id="f-cat"><option>Concerts</option><option>Movies</option><option>Events</option><option>One-off</option></select></div>
@@ -458,6 +469,9 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
 (function(){
 var ORDER = ["Concerts","Movies","Events","One-off"];
 var KIND = {Concerts:"CONCERT",Movies:"MOVIE",Events:"EVENT","One-off":"ONE-OFF"};
+/* Optional "paste a link" reader. Deploy worker/link-reader.js to Cloudflare and
+   set this to its URL (see worker/README.md) to enable the link field. */
+var LINK_READER = '';
 
 /* brand mark: hand-sketched brain (pink line-art). The wordmark supplies the dot. */
 var BRAIN = '<g fill="none" stroke="#ec8fa6" stroke-linejoin="round" stroke-linecap="round">'
@@ -923,6 +937,32 @@ document.getElementById('cancelBatch').addEventListener('click',closeBatch);
 document.getElementById('batchSave').addEventListener('click',saveBatch);
 document.getElementById('addManyBtn').addEventListener('click',function(){closeMenu();document.getElementById('bulkInput').click();});
 document.getElementById('reviewBtn').addEventListener('click',function(){closeMenu();shareReview();});
+
+/* ---------- paste a link (needs the optional Worker; see worker/README.md) ---------- */
+(function(){var lr=document.getElementById('linkRow');if(LINK_READER&&lr)lr.hidden=false;})();
+document.getElementById('linkRead').addEventListener('click',readLink);
+document.getElementById('linkInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();readLink();}});
+async function readLink(){
+  if(!LINK_READER)return;
+  var inp=document.getElementById('linkInput'),btn=document.getElementById('linkRead'),url=inp.value.trim();
+  if(!/^https?:\/\//i.test(url)){toast('Paste a full http(s) link');return;}
+  btn.disabled=true;var label=btn.textContent;btn.textContent='Reading…';
+  try{
+    var r=await fetch(LINK_READER+'?url='+encodeURIComponent(url));
+    var d=await r.json();
+    if(!d||d.error){toast('Could not read that link');return;}
+    var f=parseTicket([d.title,d.description,d.text].filter(Boolean).join('\n'));
+    if(d.title){var ct=cleanTitle(String(d.title).split(/\s+[|\-–·]\s+/)[0].trim());if(ct&&(!f.title||f.title.length<2))f.title=ct;}
+    var n=0;
+    n+=setIfEmpty('f-title',f.title);n+=setIfEmpty('f-venue',f.venue);n+=setIfEmpty('f-date',f.date);
+    [['f-time',f.time],['f-format',f.format],['f-screen',f.screen],['f-seats',f.seats],['f-booking',f.bookingId],['f-price',f.price],['f-count',f.count],['f-provider',f.provider]].forEach(function(p){n+=setIfEmpty(p[0],p[1]);});
+    if(f.cat){var sel=document.getElementById('f-cat');if(sel&&sel.value==='Concerts')sel.value=f.cat;}
+    if(f.time||f.format||f.seats||f.bookingId||f.price){var more=document.querySelector('details.more');if(more)more.open=true;}
+    if(d.image&&!pendingPhoto){try{var ir=await fetch(LINK_READER+'?img='+encodeURIComponent(d.image));if(ir.ok){var ib=await ir.blob();if(/^image\//.test(ib.type)){try{pendingPhoto=await downscale(ib);}catch(e2){pendingPhoto=ib;}showPreview(pendingPhoto);}}}catch(e3){}}
+    toast(n?'Filled from the link, please check':'Read the link, add the details');
+  }catch(e){console.error(e);toast('Could not reach the link reader');}
+  btn.disabled=false;btn.textContent=label;
+}
 document.getElementById('bulkInput').addEventListener('change',function(){var fs=Array.prototype.slice.call(this.files);this.value='';if(fs.length)openBatch(fs);});
 var searchEl=document.getElementById('search');
 searchEl.addEventListener('input',function(){searchQuery=this.value.trim().toLowerCase();document.getElementById('searchClear').hidden=!this.value;render();reveal(document.querySelector('.view:not([hidden])'));});

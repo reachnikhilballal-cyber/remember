@@ -1,0 +1,6 @@
+name = "remember-link"
+main = "link-reader.js"
+compatibility_date = "2026-01-01"
+
+# Free plan is plenty (100k requests/day). Deploy with:  npx wrangler deploy
+# You'll get a URL like https://remember-link.<your-subdomain>.workers.dev

@@ -54,6 +54,12 @@ ahead. The whole thing runs in your browser; nothing leaves your device.
   events to your calendar** (`.ics`). A running line keeps count of what you've kept.
 - **Share a stub as a card.** Turn any ticket into a clean image (drawn on-device) and send
   it to the share sheet, or save the PNG. Every card carries the link back.
+- **Year in review.** From the `⋯` menu, render a shareable "shelf so far" card: total stubs,
+  your year span, a colour-coded breakdown by shelf, and highlights (biggest year, top venue,
+  total spent).
+- **Paste a link** *(optional)*. Deploy the tiny [`worker/`](worker/) Cloudflare Worker (free)
+  and the Add sheet gains a field to paste a BookMyShow / PVR / event link, pulling the title,
+  date, venue and poster. See [`worker/README.md`](worker/README.md).
 
 <table>
 <tr>
@@ -124,8 +130,8 @@ fullstop) and the PWA icons are generated from [`icon.svg`](icon.svg) via
 
 ## ✦ Roadmap ideas
 
-Skip duplicates on bulk import · share a stub as an image card · an install nudge · sort
-within a shelf · haptics on tap. PRs and ideas welcome.
+Skip duplicates on bulk import · an install nudge · sort within a shelf · haptics on tap ·
+optional AI-vision OCR for near-perfect extraction. PRs and ideas welcome.
 
 ---
 
