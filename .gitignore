@@ -4,8 +4,9 @@
 cap-*.html
 pr-*.html
 *probe*.html
-_shot.html
+_*.html
 ocrtest.html
 parsetest.html
 tessload.html
 _ocrtest*
+promo/_scenes/
