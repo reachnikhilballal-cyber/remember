@@ -1002,7 +1002,7 @@ function makeShareCard(t){
   if(t.note){x.fillStyle='#eaa54a';x.font='400 23px "Space Mono"';x.fillText(up?'WHY I BOOKED IT':'THE MEMORY',P,H-272);x.fillStyle='rgba(243,234,216,0.88)';cClamp(x,'“'+t.note+'”',P,H-230,W-2*P-170,40,'400 33px "Space Grotesk"',3);}
   cStamp(x,W-P-150,H-330,up,t);
   x.textAlign='center';
-  x.fillStyle='rgba(243,234,216,0.55)';x.font='400 24px "Space Mono"';x.fillText('Made with Remember',W/2,H-92);
+  x.fillStyle='rgba(243,234,216,0.55)';x.font='400 23px "Space Mono"';x.fillText('Collecting digital souvenirs, one memory at a time.',W/2,H-92);
   x.fillStyle='rgba(243,234,216,0.4)';x.font='400 22px "Space Mono"';x.fillText('reachnikhilballal-cyber.github.io/remember',W/2,H-56);
   x.textAlign='left';
   return canvas;
@@ -1015,7 +1015,7 @@ function shareTicket(id){
     var blob=dataURLtoBlobSync(makeShareCard(t).toDataURL('image/png'));
     var file=new File([blob],fname,{type:'image/png'});
     if(navigator.canShare&&navigator.canShare({files:[file]})){
-      navigator.share({files:[file],title:t.title||'Remember',text:'A stub I kept on Remember.'}).catch(function(){});
+      navigator.share({files:[file],title:t.title||'Remember.',text:(t.title?'“'+t.title+'”. ':'')+'Collecting digital souvenirs, one memory at a time.',url:'https://reachnikhilballal-cyber.github.io/remember/'}).catch(function(){});
     }else{
       var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=fname;a.click();setTimeout(function(){URL.revokeObjectURL(url);},900);toast('Card saved');
     }
