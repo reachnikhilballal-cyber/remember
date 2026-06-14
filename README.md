@@ -130,8 +130,8 @@ fullstop) and the PWA icons are generated from [`icon.svg`](icon.svg) via
 
 ## ✦ Roadmap ideas
 
-Skip duplicates on bulk import · an install nudge · sort within a shelf · haptics on tap ·
-optional AI-vision OCR for near-perfect extraction. PRs and ideas welcome.
+Sort within a shelf · haptics on tap · optional AI-vision OCR for near-perfect extraction.
+PRs and ideas welcome.
 
 ---
 

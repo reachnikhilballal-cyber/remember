@@ -124,6 +124,14 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 .banner b{color:var(--ink);font-weight:600;}
 .banner button{font:inherit;font-size:12.5px;font-family:'Space Mono',monospace;letter-spacing:.04em;color:var(--stamp);background:none;border:1px solid var(--line);border-radius:999px;padding:7px 13px;cursor:pointer;white-space:nowrap;}
 .banner button:hover{border-color:var(--stamp);}
+.banner.install{margin:0 0 26px;}
+.banner.install p{flex:1;min-width:160px;}
+.banner.install #installBtn{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:#15120d;background:var(--glow);border:0;border-radius:999px;padding:8px 16px;cursor:pointer;}
+.banner.install #installBtn:hover{filter:brightness(1.06);}
+.banner.install #installBtn[hidden]{display:none;}
+.banner .install-x{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
+.banner .install-x:hover{color:var(--ink);border-color:var(--ink-3);}
+.banner .install-x svg{width:13px;height:13px;}
 
 /* ---------- shelf ---------- */
 .cat{padding:34px 0 6px;}
@@ -375,6 +383,11 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
 </div></section>
 
 <main id="main"><div class="wrap">
+  <div class="banner install" id="installBar" hidden>
+    <p id="installText"></p>
+    <button id="installBtn" type="button">Install</button>
+    <button id="installX" class="install-x" type="button" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
   <div class="searchbar" id="searchbar" hidden>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
     <input id="search" type="search" placeholder="Search your stubs…" aria-label="Search your stubs" autocomplete="off" />
@@ -913,19 +926,26 @@ function addBatchRow(draft){
   row.querySelector('.bdate').addEventListener('change',function(){draft.f.date=this.value;});
   row.querySelector('.bremove').addEventListener('click',function(){var idx=batchDrafts.indexOf(draft);if(idx>=0)batchDrafts[idx]=null;row.remove();refreshBatchProg();});
 }
+function tkey(o){var b=(o.bookingId||'').replace(/\s/g,'').toUpperCase();if(b.length>=4)return 'b:'+b;return 't:'+((o.title||'').trim().toLowerCase())+'|'+(o.date||'');}
 async function saveBatch(){
   var live=batchDrafts.filter(Boolean);if(!live.length){closeBatch();return;}
-  var counts={};
+  var have={};TICKETS.forEach(function(t){have[tkey(t)]=1;});
+  var counts={},added=0,skipped=0;
   for(var i=0;i<live.length;i++){
     var d=live[i],f=d.f||{};var cat=f.cat||'Concerts';
+    var k=tkey(f);
+    if(have[k]){skipped++;continue;}
+    have[k]=1;
     var t={id:uid(),cat:cat,kind:KIND[cat]||cat.toUpperCase(),title:((f.title||'').trim()||'Untitled'),sub:'',venue:f.venue||'',date:f.date||new Date().toISOString().slice(0,10),time:f.time||'',format:f.format||'',screen:f.screen||'',seats:f.seats||'',bookingId:f.bookingId||'',price:f.price||'',count:f.count||'',provider:f.provider||'',cert:f.cert||'',note:'',createdAt:Date.now(),photo:d.photo};
     t.serial=serialFor(t);
-    try{await put(t);TICKETS.push(t);counts[cat]=(counts[cat]||0)+1;}catch(e){}
+    try{await put(t);TICKETS.push(t);counts[cat]=(counts[cat]||0)+1;added++;}catch(e){}
   }
   render();reveal(document.querySelector('.view:not([hidden])'));
   var parts=ORDER.filter(function(c){return counts[c];}).map(function(c){return counts[c]+' '+c;});
   _lockY=0;closeBatch();
-  toast('Added '+live.length+': '+parts.join(', '));
+  var msg=added?('Added '+added+(parts.length?': '+parts.join(', '):'')):'Nothing added';
+  if(skipped)msg+=' · '+skipped+' duplicate'+(skipped>1?'s':'')+' skipped';
+  toast(msg);
 }
 function closeBatch(){
   batchSheet.classList.remove('show');scrim.classList.remove('show');
@@ -963,6 +983,24 @@ async function readLink(){
   }catch(e){console.error(e);toast('Could not reach the link reader');}
   btn.disabled=false;btn.textContent=label;
 }
+
+/* ---------- install nudge ---------- */
+var deferredPrompt=null;
+function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}
+function installDismissed(){try{return localStorage.getItem('rm-install-x')==='1';}catch(e){return false;}}
+function hideInstall(){var b=document.getElementById('installBar');if(b)b.hidden=true;}
+function showInstall(mode){
+  if(isStandalone()||installDismissed())return;
+  var bar=document.getElementById('installBar');if(!bar)return;
+  if(mode==='ios'){document.getElementById('installText').textContent='Add Remember to your home screen: tap Share, then “Add to Home Screen”.';document.getElementById('installBtn').hidden=true;}
+  else{document.getElementById('installText').textContent='Install Remember for a full-screen, offline app.';document.getElementById('installBtn').hidden=false;}
+  bar.hidden=false;
+}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;showInstall('prompt');});
+window.addEventListener('appinstalled',function(){deferredPrompt=null;hideInstall();});
+document.getElementById('installBtn').addEventListener('click',function(){if(!deferredPrompt)return;deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;hideInstall();});});
+document.getElementById('installX').addEventListener('click',function(){hideInstall();try{localStorage.setItem('rm-install-x','1');}catch(e){}});
+(function(){var ua=navigator.userAgent||'';var ios=/iphone|ipad|ipod/i.test(ua)&&!/crios|fxios|edgios/i.test(ua);if(ios&&!isStandalone()&&!installDismissed())setTimeout(function(){showInstall('ios');},1400);})();
 document.getElementById('bulkInput').addEventListener('change',function(){var fs=Array.prototype.slice.call(this.files);this.value='';if(fs.length)openBatch(fs);});
 var searchEl=document.getElementById('search');
 searchEl.addEventListener('input',function(){searchQuery=this.value.trim().toLowerCase();document.getElementById('searchClear').hidden=!this.value;render();reveal(document.querySelector('.view:not([hidden])'));});
