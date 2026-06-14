@@ -329,6 +329,7 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
     <button class="ib" id="menuBtn" aria-label="More" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
     <div class="pop" id="menuPop" hidden role="menu">
       <button id="addManyBtn" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="13" height="13" rx="2"/><path d="M8 21h11a2 2 0 0 0 2-2V8"/></svg>Add many</button>
+      <button id="reviewBtn" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V11M10 20V4M16 20v-6M21 20H3"/></svg>Year in review</button>
       <div class="sep"></div>
       <button id="exportBtn" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>Export backup (.json)</button>
       <button id="importBtn" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21V9m0 0 4 4m-4-4-4 4M5 3h14"/></svg>Import backup</button>
@@ -910,6 +911,7 @@ document.getElementById('closeBatch').addEventListener('click',closeBatch);
 document.getElementById('cancelBatch').addEventListener('click',closeBatch);
 document.getElementById('batchSave').addEventListener('click',saveBatch);
 document.getElementById('addManyBtn').addEventListener('click',function(){closeMenu();document.getElementById('bulkInput').click();});
+document.getElementById('reviewBtn').addEventListener('click',function(){closeMenu();shareReview();});
 document.getElementById('bulkInput').addEventListener('change',function(){var fs=Array.prototype.slice.call(this.files);this.value='';if(fs.length)openBatch(fs);});
 var searchEl=document.getElementById('search');
 searchEl.addEventListener('input',function(){searchQuery=this.value.trim().toLowerCase();document.getElementById('searchClear').hidden=!this.value;render();reveal(document.querySelector('.view:not([hidden])'));});
@@ -1008,6 +1010,66 @@ function makeShareCard(t){
   return canvas;
 }
 function dataURLtoBlobSync(d){var p=d.split(','),mime=p[0].match(/:(.*?);/)[1],b=atob(p[1]),n=b.length,u=new Uint8Array(n);while(n--)u[n]=b.charCodeAt(n);return new Blob([u],{type:mime});}
+
+/* ---------- the shelf so far: a year-in-review card ---------- */
+var CATCOL={Concerts:'#e3604f',Movies:'#eaa54a',Events:'#7ddc8f','One-off':'#ec8fa6'};
+function reviewStats(){
+  var coll=TICKETS.filter(function(t){return !isUpcoming(t);}), up=TICKETS.filter(isUpcoming);
+  var byCat={Concerts:0,Movies:0,Events:0,'One-off':0},years={},venues={},spend=0;
+  coll.forEach(function(t){
+    if(byCat[t.cat]==null)byCat[t.cat]=0; byCat[t.cat]++;
+    var y=(t.date||'').slice(0,4); if(y)years[y]=(years[y]||0)+1;
+    if(t.venue){var v=t.venue.split(',')[0].trim(); if(v)venues[v]=(venues[v]||0)+1;}
+    if(t.price){var n=parseFloat(String(t.price).replace(/[^0-9.]/g,'')); if(!isNaN(n))spend+=n;}
+  });
+  var yrs=Object.keys(years).sort();
+  var bigYear=Object.keys(years).sort(function(a,b){return years[b]-years[a];})[0]||'';
+  var topVenue=Object.keys(venues).sort(function(a,b){return venues[b]-venues[a];})[0]||'';
+  var topCat=ORDER.slice().sort(function(a,b){return (byCat[b]||0)-(byCat[a]||0);})[0];
+  return {total:coll.length,up:up.length,byCat:byCat,span:yrs.length?(yrs[0]===yrs[yrs.length-1]?yrs[0]:yrs[0]+'–'+yrs[yrs.length-1]):'',bigYear:bigYear,bigYearN:years[bigYear]||0,topVenue:topVenue,topCat:topCat,spend:Math.round(spend)};
+}
+function makeReviewCard(s){
+  var W=1080,H=1350,P=88,canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;var x=canvas.getContext('2d');
+  x.fillStyle='#15120d';x.fillRect(0,0,W,H);
+  var g1=x.createRadialGradient(200,180,0,200,180,720);g1.addColorStop(0,'rgba(234,165,74,0.16)');g1.addColorStop(1,'rgba(234,165,74,0)');x.fillStyle=g1;x.fillRect(0,0,W,H);
+  var g2=x.createRadialGradient(940,1180,0,940,1180,700);g2.addColorStop(0,'rgba(227,96,79,0.10)');g2.addColorStop(1,'rgba(227,96,79,0)');x.fillStyle=g2;x.fillRect(0,0,W,H);
+  cRect(x,40,40,W-80,H-80,30);x.strokeStyle='rgba(242,233,214,0.12)';x.lineWidth=2;x.stroke();
+  cBrain(x,P,P-2,56);x.fillStyle='#f2e9d6';x.font='700 40px "Space Grotesk"';x.textBaseline='alphabetic';x.fillText('Remember',P+76,P+44);var rw=x.measureText('Remember').width;x.fillStyle='#e3604f';x.fillText('.',P+76+rw+3,P+44);
+  x.textAlign='right';x.fillStyle='#eaa54a';x.font='700 22px "Space Mono"';x.fillText('THE SHELF SO FAR',W-P,P+40);x.textAlign='left';
+  x.strokeStyle='rgba(242,233,214,0.16)';x.lineWidth=2;x.setLineDash([8,11]);x.beginPath();x.moveTo(P,P+92);x.lineTo(W-P,P+92);x.stroke();x.setLineDash([]);
+  x.fillStyle='#f3ead8';x.font='700 230px "Space Grotesk"';x.fillText(String(s.total),P-6,P+330);
+  var nw=x.measureText(String(s.total)).width;
+  x.fillStyle='rgba(243,234,216,0.7)';x.font='400 40px "Space Grotesk"';x.fillText('stubs kept',P+nw+24,P+278);
+  x.fillStyle='rgba(243,234,216,0.45)';x.font='400 30px "Space Mono"';x.fillText((s.span||'')+(s.up?'  ·  '+s.up+' upcoming':''),P+nw+26,P+322);
+  var by=P+440,bw=W-2*P,maxc=Math.max(1,s.byCat.Concerts,s.byCat.Movies,s.byCat.Events,s.byCat['One-off']);
+  ['Concerts','Movies','Events','One-off'].forEach(function(cat,i){var yy=by+i*82;
+    x.fillStyle='#f3ead8';x.font='500 30px "Space Grotesk"';x.fillText(cat,P,yy);
+    x.fillStyle='rgba(243,234,216,0.6)';x.font='400 26px "Space Mono"';x.textAlign='right';x.fillText(String(s.byCat[cat]),W-P,yy);x.textAlign='left';
+    x.fillStyle='rgba(242,233,214,0.08)';cRect(x,P,yy+16,bw,12,6);x.fill();
+    x.fillStyle=CATCOL[cat];cRect(x,P,yy+16,Math.max(12,bw*(s.byCat[cat]/maxc)),12,6);x.fill();
+  });
+  var hy=by+4*82+54;
+  function hl(col,label,val,yy){x.fillStyle='#eaa54a';x.font='400 20px "Space Mono"';x.fillText(label.toUpperCase(),col,yy);x.fillStyle='#f3ead8';x.font='600 34px "Space Grotesk"';x.fillText(val,col,yy+44);}
+  hl(P,'Most kept',s.topCat||'—',hy);
+  hl(W/2+10,'Biggest year',s.bigYear?(s.bigYear+' · '+s.bigYearN+' night'+(s.bigYearN===1?'':'s')):'—',hy);
+  hl(P,'Most at',(s.topVenue||'—').slice(0,22),hy+108);
+  hl(W/2+10,'Kept on a budget',s.spend?('₹'+s.spend.toLocaleString('en-IN')):'—',hy+108);
+  x.textAlign='center';x.fillStyle='rgba(243,234,216,0.55)';x.font='400 23px "Space Mono"';x.fillText('Collecting digital souvenirs, one memory at a time.',W/2,H-92);
+  x.fillStyle='rgba(243,234,216,0.4)';x.font='400 22px "Space Mono"';x.fillText('reachnikhilballal-cyber.github.io/remember',W/2,H-56);x.textAlign='left';
+  return canvas;
+}
+function shareReview(){
+  if(!TICKETS.length){toast('Add a few stubs first');return;}
+  try{
+    var blob=dataURLtoBlobSync(makeReviewCard(reviewStats()).toDataURL('image/png'));
+    var file=new File([blob],'remember-the-shelf-so-far.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'Remember.',text:'My shelf so far. Collecting digital souvenirs, one memory at a time.',url:'https://reachnikhilballal-cyber.github.io/remember/'}).catch(function(){});
+    }else{
+      var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(function(){URL.revokeObjectURL(url);},900);toast('Saved your year in review');
+    }
+  }catch(e){console.error(e);toast('Could not make the card');}
+}
 function shareTicket(id){
   var t=TICKETS.find(function(x){return x.id===id;});if(!t)return;
   try{
