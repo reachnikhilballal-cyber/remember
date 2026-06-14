@@ -211,9 +211,15 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 footer{padding:48px 0 120px;text-align:center;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--ink-3);}
 footer a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line);}
 footer a:hover{color:var(--glow);}
-footer .byline{margin-top:12px;}
-footer .byline a{color:var(--stamp);border-bottom-color:color-mix(in srgb,var(--stamp) 40%,transparent);}
-footer .byline a:hover{color:var(--glow);}
+footer .byline{margin-top:14px;}
+footer .byline a.byname{display:inline-flex;align-items:center;gap:8px;color:var(--stamp);border-bottom:0;}
+footer .byline a.byname:hover{color:var(--glow);}
+.nb{position:relative;display:inline-block;width:22px;height:22px;border-radius:7px;background:var(--glow);overflow:hidden;flex-shrink:0;}
+.nb::before{content:"";position:absolute;inset:-45%;background:conic-gradient(from 0deg,transparent 0 62%,rgba(255,255,255,.85) 78%,var(--glow) 90%,transparent 100%);animation:nbspin 3s linear infinite;}
+.nb::after{content:"NB";position:absolute;inset:2px;border-radius:5px;background:var(--card);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:9.5px;letter-spacing:-.03em;color:var(--ink);}
+.byname:hover .nb::after{color:var(--glow);}
+@keyframes nbspin{to{transform:rotate(360deg);}}
+@media(prefers-reduced-motion:reduce){.nb::before{animation:none;}}
 
 /* ---------- add sheet ---------- */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);z-index:50;opacity:0;transition:opacity .25s;overscroll-behavior:contain;touch-action:none;}
@@ -354,7 +360,7 @@ details.more[open]>summary .chev{transform:rotate(90deg);}
   </div>
 </div></main>
 
-<footer><div class="wrap">Remember &middot; your stubs live on this device &middot; <a href="directions.html">design directions</a><div class="byline">Built by <a href="https://nikhilballal.com" target="_blank" rel="noopener">Nikhil Ballal</a></div></div></footer>
+<footer><div class="wrap">Remember &middot; your stubs live on this device &middot; <a href="directions.html">design directions</a><div class="byline">Built by <a class="byname" href="https://nikhilballal.com" target="_blank" rel="noopener"><span class="nb" aria-hidden="true"></span>Nikhil Ballal</a></div></div></footer>
 
 <!-- add / edit sheet -->
 <div class="scrim" id="scrim" hidden></div>
