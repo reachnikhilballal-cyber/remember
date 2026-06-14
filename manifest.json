@@ -1,7 +1,7 @@
 {
   "name": "Remember",
   "short_name": "Remember",
-  "description": "A nostalgic shelf for the ticket stubs you kept. Tap a stub to light it up and remember the night.",
+  "description": "Collecting digital souvenirs, one memory at a time.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

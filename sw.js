@@ -1,5 +1,5 @@
 /* Remember: minimal offline shell cache */
-const CACHE = 'remember-v2';
+const CACHE = 'remember-v3';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon.svg'];
 
 self.addEventListener('install', (e) => {
