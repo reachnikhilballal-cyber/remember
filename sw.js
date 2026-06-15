@@ -1,6 +1,6 @@
 /* Remember: minimal offline shell cache */
-const CACHE = 'remember-v4';
-const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-192-maskable.png', './icon-512-maskable.png', './apple-touch-icon.png', './icon.svg'];
+const CACHE = 'remember-v5';
+const SHELL = ['./', './index.html', './manifest.json?v=5', './icon-192.png?v=5', './icon-512.png?v=5', './icon-192-maskable.png?v=5', './icon-512-maskable.png?v=5', './apple-touch-icon.png?v=5', './icon.svg?v=5'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()).catch(() => {}));
