@@ -37,8 +37,10 @@ document.body.style.width=W+'px';document.body.style.height=H+'px';
 
 if(art==='icon'){
   stage.innerHTML='<svg width="'+W+'" height="'+H+'" viewBox="0 0 120 120"><rect width="120" height="120" rx="27" fill="#15120d"/>'+brainPaths()+dot(103,100,10)+'</svg>';
-}else if(art==='icon-pad'){ // maskable: brain centered with safe margins, no corner dot clip
-  stage.innerHTML='<svg width="'+W+'" height="'+H+'" viewBox="-6 -10 132 140"><rect x="-6" y="-10" width="132" height="140" fill="#15120d"/>'+brainPaths()+dot(96,96,9)+'</svg>';
+}else if(art==='icon-pad'){ // maskable: full-bleed dark + the favicon composition centred in the safe zone (square viewBox, no distortion)
+  stage.innerHTML='<svg width="'+W+'" height="'+H+'" viewBox="-23 -23 166 166"><rect x="-23" y="-23" width="166" height="166" fill="#15120d"/>'+brainPaths()+dot(103,100,10)+'</svg>';
+}else if(art==='apple'){ // iOS apple-touch: full-bleed dark (no built-in rounding; iOS adds its own squircle), favicon-size brain, dot pulled just inside the corner so iOS never clips it
+  stage.innerHTML='<svg width="'+W+'" height="'+H+'" viewBox="0 0 120 120"><rect width="120" height="120" fill="#15120d"/>'+brainPaths()+dot(96,96,10)+'</svg>';
 }else if(art==='mark'){
   var s=Math.min(W,H)-pad*2;
   stage.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="12 9 100 104">'+brainPaths()+dot(103,100,10)+'</svg>';
